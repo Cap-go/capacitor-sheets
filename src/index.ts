@@ -70,6 +70,8 @@ export type {
   SheetOptions,
   SheetPlacement,
   SheetProgressAnimation,
+  SheetSafeAreaEdge,
+  SheetSafeAreaMode,
   SheetTrack,
   SheetTravelEvent,
   SheetTravelRangeChangeEvent,

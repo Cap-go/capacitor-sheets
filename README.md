@@ -114,6 +114,16 @@ Each usecase has its own animated WebP demo. These match the public Silk-style e
   </tr>
 </table>
 
+## Online Playgrounds
+
+The examples can be opened directly in StackBlitz:
+
+- [React playground](https://stackblitz.com/github/Cap-go/capacitor-sheets/tree/main/examples/react-app?file=src/main.tsx)
+- [Vue playground](https://stackblitz.com/github/Cap-go/capacitor-sheets/tree/main/examples/vue-app?file=src/App.vue)
+- [Angular playground](https://stackblitz.com/github/Cap-go/capacitor-sheets/tree/main/examples/angular-app?file=src/app/app.component.ts)
+- [Svelte playground](https://stackblitz.com/github/Cap-go/capacitor-sheets/tree/main/examples/svelte-app?file=src/App.svelte)
+- [Solid playground](https://stackblitz.com/github/Cap-go/capacitor-sheets/tree/main/examples/solid-app?file=src/main.tsx)
+
 ## Features
 
 - **Framework agnostic** custom elements: no React runtime dependency in the core package.
@@ -121,6 +131,8 @@ Each usecase has its own animated WebP demo. These match the public Silk-style e
 - **Detents** with `em`, `rem`, `dvh`, `lvh`, `svh`, `calc()`, and other modern CSS lengths.
 - **Touch, pointer, wheel, and trackpad gestures** with dismissal, overshoot, and trap controls.
 - **Modal behavior**: focus trap, focus restore, Escape dismissal, outside-click dismissal, and inert outside content.
+- **Capacitor safe-area defaults** using `env(safe-area-inset-*)` plus Capacitor SystemBars `--safe-area-inset-*` fallbacks.
+- **Keyboard-aware layout** using `visualViewport` resize/scroll events and `preventScroll` focus behavior.
 - **Overlay compatibility** through `cap-island` and `cap-external-overlay`.
 - **Stacking and outlet animation hooks** for depth effects and coordinated page motion.
 - **Scroll primitives** with progress/distance helpers.
@@ -129,24 +141,24 @@ Each usecase has its own animated WebP demo. These match the public Silk-style e
 
 ## Usecase Coverage
 
-| Usecase                      | Capgo Sheets pattern                                                     |
-| ---------------------------- | ------------------------------------------------------------------------ |
-| Long Sheet                   | `cap-sheet` + `cap-scroll` or naturally scrolling `cap-sheet-content`    |
-| Sheet with Detent            | `detents="18em 32em"` and `stepTo()` / `cap-sheet-trigger action="step"` |
-| Sidebar                      | `content-placement="left"` or `content-placement="right"`                |
-| Bottom Sheet                 | default `content-placement="bottom"`                                     |
-| Sheet with Keyboard          | visual viewport offset support via `native-focus-scroll-prevention`      |
-| Toast                        | `inert-outside="false"`, `focus-trap="false"`, detached content styling  |
-| Detached Sheet               | rounded content with margins and `cap-sheet-special-wrapper` composition |
-| Page from Bottom             | full-height bottom sheet content                                         |
-| Top Sheet                    | `content-placement="top"`                                                |
-| Sheet with Stacking          | `cap-sheet-stack`, stack depth variables, and stacking animation hooks   |
-| Sheet with Depth             | `cap-sheet-outlet` progress variables and `travelAnimation`              |
-| Parallax Page                | `cap-sheet-outlet` + `cap-scroll` progress composition                   |
-| Page                         | full-viewport sheet content or side-entering `content-placement`         |
-| Lightbox                     | `content-placement="center"` plus backdrop and media content             |
-| Persistent Sheet with Detent | `default-presented`, `swipe-dismissal="false"`, `inert-outside="false"`  |
-| Card                         | `content-placement="center"` with compact content                        |
+| Usecase                      | Capgo Sheets pattern                                                                                      |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Long Sheet                   | `cap-sheet` + `cap-scroll` or naturally scrolling `cap-sheet-content`                                     |
+| Sheet with Detent            | `detents="18em 32em"` and `stepTo()` / `cap-sheet-trigger action="step"`                                  |
+| Sidebar                      | `content-placement="left"` or `content-placement="right"`                                                 |
+| Bottom Sheet                 | default `content-placement="bottom"`                                                                      |
+| Sheet with Keyboard          | visual viewport offset support via `native-focus-scroll-prevention`                                       |
+| Toast                        | `inert-outside="false"`, `close-on-outside-click="false"`, `focus-trap="false"`                           |
+| Detached Sheet               | rounded content with margins and `cap-sheet-special-wrapper` composition                                  |
+| Page from Bottom             | full-height bottom sheet content                                                                          |
+| Top Sheet                    | `content-placement="top"`                                                                                 |
+| Sheet with Stacking          | `cap-sheet-stack`, stack depth variables, and stacking animation hooks                                    |
+| Sheet with Depth             | `cap-sheet-outlet` progress variables and `travelAnimation`                                               |
+| Parallax Page                | `cap-sheet-outlet` + `cap-scroll` progress composition                                                    |
+| Page                         | full-viewport sheet content or side-entering `content-placement`                                          |
+| Lightbox                     | `content-placement="center"` plus backdrop and media content                                              |
+| Persistent Sheet with Detent | `default-presented`, `swipe-dismissal="false"`, `inert-outside="false"`, `close-on-outside-click="false"` |
+| Card                         | `content-placement="center"` with compact content                                                         |
 
 ## Installation
 
@@ -154,6 +166,46 @@ Each usecase has its own animated WebP demo. These match the public Silk-style e
 npm install @capgo/capacitor-sheets
 npx cap sync
 ```
+
+## Capacitor Setup
+
+Add `viewport-fit=cover` so iOS exposes safe-area insets to CSS:
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+```
+
+Safe areas are enabled by default. `cap-sheet-view` reads standard `env(safe-area-inset-*)` values and Capacitor SystemBars fallback variables such as `--safe-area-inset-bottom`, then applies them to the sheet viewport in `em`-based layout. You can opt out or choose edges per sheet:
+
+```text
+<cap-sheet safe-area="none"></cap-sheet>
+<cap-sheet safe-area="bottom left right"></cap-sheet>
+```
+
+For Capacitor apps with overlay status/system bars, keep the platform plugins responsible for exposing correct insets:
+
+```ts
+import type { CapacitorConfig } from '@capacitor/cli';
+
+const config: CapacitorConfig = {
+  plugins: {
+    StatusBar: {
+      overlaysWebView: true,
+    },
+    Keyboard: {
+      resize: 'body',
+      resizeOnFullScreen: true,
+    },
+    SystemBars: {
+      insetsHandling: 'css',
+    },
+  },
+};
+
+export default config;
+```
+
+Keyboard handling is on by default through `native-focus-scroll-prevention`. It listens to `visualViewport` changes, keeps focused controls visible above the keyboard, and restores the sheet offset when the keyboard closes.
 
 ## Vanilla Usage
 

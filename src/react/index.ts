@@ -4,6 +4,8 @@ import { applySheetOptions } from '../components/cap-sheet';
 import type {
   SheetOptions,
   SheetPresentedChangeEvent,
+  SheetSafeAreaEdge,
+  SheetSafeAreaMode,
   SheetActiveDetentChangeEvent,
   SheetTravelEvent,
 } from '../core/types';
@@ -68,6 +70,7 @@ type CapElementAttributes = {
 type Booleanish = boolean | 'true' | 'false';
 type Placement = 'top' | 'bottom' | 'left' | 'right' | 'center';
 type Track = 'top' | 'bottom' | 'left' | 'right';
+type SafeArea = Booleanish | 'auto' | 'none' | 'all' | string;
 
 interface CapSheetsIntrinsicElements {
   'cap-sheet': CapElementAttributes & {
@@ -77,6 +80,7 @@ interface CapSheetsIntrinsicElements {
     'default-active-detent'?: number | string;
     detents?: string;
     'content-placement'?: Placement;
+    'safe-area'?: SafeArea;
     tracks?: string;
     'sheet-role'?: string;
     swipe?: Booleanish;
@@ -84,6 +88,8 @@ interface CapSheetsIntrinsicElements {
     'swipe-overshoot'?: Booleanish;
     'swipe-trap'?: Booleanish;
     'inert-outside'?: Booleanish;
+    'native-edge-swipe-prevention'?: Booleanish;
+    'native-focus-scroll-prevention'?: Booleanish;
     'close-on-outside-click'?: Booleanish;
     'close-on-escape'?: Booleanish;
     'focus-trap'?: Booleanish;
@@ -156,6 +162,8 @@ export type {
   SheetPresentedChangeEvent,
   SheetActiveDetentChangeEvent,
   SheetTravelEvent,
+  SheetSafeAreaEdge,
+  SheetSafeAreaMode,
   Track,
   Placement,
 };

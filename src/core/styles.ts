@@ -10,6 +10,14 @@ const CSS = `
   --cap-sheet-surface: Canvas;
   --cap-sheet-shadow: 0 0.5em 2.5em rgb(0 0 0 / 0.18);
   --cap-sheet-z-index: 1000;
+  --cap-sheet-safe-area-top: max(env(safe-area-inset-top, 0em), var(--safe-area-inset-top, 0em));
+  --cap-sheet-safe-area-bottom: max(env(safe-area-inset-bottom, 0em), var(--safe-area-inset-bottom, 0em));
+  --cap-sheet-safe-area-left: max(env(safe-area-inset-left, 0em), var(--safe-area-inset-left, 0em));
+  --cap-sheet-safe-area-right: max(env(safe-area-inset-right, 0em), var(--safe-area-inset-right, 0em));
+  --cap-sheet-applied-safe-area-top: var(--cap-sheet-safe-area-top);
+  --cap-sheet-applied-safe-area-bottom: var(--cap-sheet-safe-area-bottom);
+  --cap-sheet-applied-safe-area-left: var(--cap-sheet-safe-area-left);
+  --cap-sheet-applied-safe-area-right: var(--cap-sheet-safe-area-right);
 }
 
 @supports (height: 1dvh) {
@@ -35,9 +43,13 @@ cap-sheet-view {
   z-index: var(--cap-sheet-z-index);
   pointer-events: none;
   touch-action: none;
+  overscroll-behavior: none;
   contain: layout style;
   box-sizing: border-box;
-  padding-block-end: var(--cap-sheet-keyboard-offset, 0em);
+  padding-block-start: var(--cap-sheet-applied-safe-area-top, 0em);
+  padding-block-end: calc(var(--cap-sheet-applied-safe-area-bottom, 0em) + var(--cap-sheet-keyboard-offset, 0em));
+  padding-inline-start: var(--cap-sheet-applied-safe-area-left, 0em);
+  padding-inline-end: var(--cap-sheet-applied-safe-area-right, 0em);
 }
 
 cap-sheet-view[content-placement="top"] {
@@ -82,7 +94,7 @@ cap-sheet-content {
   position: relative;
   display: block;
   width: min(100%, 34em);
-  max-height: calc(var(--cap-sheet-100-lvh-dvh-pct) - var(--cap-sheet-keyboard-offset, 0em));
+  max-height: 100%;
   color: CanvasText;
   background: var(--cap-sheet-surface);
   border-radius: var(--cap-sheet-radius) var(--cap-sheet-radius) 0 0;
@@ -102,12 +114,14 @@ cap-sheet-view[content-placement="top"] cap-sheet-content {
 cap-sheet-view[content-placement="left"] cap-sheet-content {
   width: min(88%, 28em);
   height: 100%;
+  max-height: 100%;
   border-radius: 0 var(--cap-sheet-radius) var(--cap-sheet-radius) 0;
 }
 
 cap-sheet-view[content-placement="right"] cap-sheet-content {
   width: min(88%, 28em);
   height: 100%;
+  max-height: 100%;
   border-radius: var(--cap-sheet-radius) 0 0 var(--cap-sheet-radius);
 }
 

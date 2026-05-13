@@ -17,6 +17,7 @@ const observed = [
   'native-focus-scroll-prevention',
   'presented',
   'restore-focus',
+  'safe-area',
   'sheet-role',
   'stack',
   'swipe',
@@ -163,6 +164,12 @@ export function applySheetOptions(element: HTMLElement, options: Partial<SheetOp
     element.setAttribute('default-presented', String(options.defaultPresented));
   if (options.presented !== undefined) element.toggleAttribute('presented', options.presented);
   if (options.sheetRole) element.setAttribute('sheet-role', options.sheetRole);
+  if (options.safeArea !== undefined) {
+    element.setAttribute(
+      'safe-area',
+      Array.isArray(options.safeArea) ? options.safeArea.join(' ') : String(options.safeArea),
+    );
+  }
   if (options.stack) element.setAttribute('stack', options.stack);
   if (options.tracks)
     element.setAttribute('tracks', Array.isArray(options.tracks) ? options.tracks.join(' ') : options.tracks);

@@ -4,6 +4,12 @@ export type SheetPlacement = 'top' | 'bottom' | 'left' | 'right' | 'center';
 /** Swipe track used when the content can be dismissed from an edge. */
 export type SheetTrack = Exclude<SheetPlacement, 'center'>;
 
+/** Viewport edges protected by safe-area insets. */
+export type SheetSafeAreaEdge = 'top' | 'bottom' | 'left' | 'right';
+
+/** Safe-area behavior for Capacitor WebViews and mobile browsers. */
+export type SheetSafeAreaMode = boolean | 'auto' | 'none' | SheetSafeAreaEdge[];
+
 /** Runtime travel state emitted by sheet lifecycle events. */
 export type SheetTravelStatus = 'idle' | 'entering' | 'exiting' | 'dragging' | 'settling';
 
@@ -75,6 +81,8 @@ export interface SheetOptions {
   sheetRole?: 'dialog' | 'alertdialog' | 'status' | string;
   /** Where content sits when fully presented. */
   contentPlacement?: SheetPlacement;
+  /** Safe-area edges protected by the sheet viewport. Defaults to `auto`. */
+  safeArea?: SheetSafeAreaMode;
   /** Edge tracks that can dismiss the sheet. */
   tracks?: SheetTrack | SheetTrack[];
   /** Enables pointer, touch, trackpad, and wheel travel gestures. */

@@ -36,6 +36,16 @@ const outDir = join(process.cwd(), 'docs', 'demos');
 const width = 900;
 const height = 620;
 const frameCount = 36;
+const phone = {
+  outerLeft: 270,
+  outerTop: 106,
+  outerRight: 630,
+  outerBottom: 606,
+  screenLeft: 286,
+  screenTop: 130,
+  screenRight: 614,
+  screenBottom: 584,
+};
 
 const demos: Demo[] = [
   {
@@ -157,9 +167,9 @@ function drawRect(x1: number, y1: number, x2: number, y2: number, r = 0): string
     : `rectangle ${left},${top} ${right},${bottom}`;
 }
 
-function baseArgs(demo: Demo, progress: number): string[] {
-  const radius = demo.kind === 'depth' ? 28 * progress : 0;
-  const inset = demo.kind === 'depth' ? 18 * progress : 0;
+function baseArgs(demo: Demo): string[] {
+  const radius = 0;
+  const inset = 0;
 
   return [
     'magick',
@@ -171,16 +181,16 @@ function baseArgs(demo: Demo, progress: number): string[] {
     '-fill',
     '#101010',
     '-pointsize',
-    '34',
+    '32',
     '-annotate',
-    '+54+74',
+    '+54+52',
     demo.title,
     '-fill',
     '#59554c',
     '-pointsize',
     '20',
     '-annotate',
-    '+56+110',
+    '+56+84',
     demo.caption,
     '-fill',
     '#f9f6ef',
@@ -189,47 +199,78 @@ function baseArgs(demo: Demo, progress: number): string[] {
     '-strokewidth',
     '3',
     '-draw',
-    drawRect(270 + inset, 26 + inset, 630 - inset, 594 - inset, 38 + radius),
+    drawRect(
+      phone.outerLeft + inset,
+      phone.outerTop + inset,
+      phone.outerRight - inset,
+      phone.outerBottom - inset,
+      38 + radius,
+    ),
     '-stroke',
     'none',
     '-fill',
     '#f7f2e8',
     '-draw',
-    drawRect(286 + inset, 48 + inset, 614 - inset, 572 - inset, 24 + radius),
+    drawRect(
+      phone.screenLeft + inset,
+      phone.screenTop + inset,
+      phone.screenRight - inset,
+      phone.screenBottom - inset,
+      24 + radius,
+    ),
     '-fill',
     demo.accent,
     '-draw',
-    drawRect(306 + inset, 72 + inset, 594 - inset, 132 + inset, 16),
+    drawRect(306 + inset, 154 + inset, 594 - inset, 214 + inset, 16),
     '-fill',
     '#ffffff',
     '-pointsize',
     '20',
     '-annotate',
-    `+${326 + inset}+${109 + inset}`,
+    `+${326 + inset}+${191 + inset}`,
     'Capgo Sheets',
     '-fill',
     '#ffffff',
     '-draw',
-    drawRect(528 + inset, 90 + inset, 570 + inset, 102 + inset, 6),
+    drawRect(528 + inset, 172 + inset, 570 + inset, 184 + inset, 6),
     '-fill',
     '#ded5c8',
     '-draw',
-    drawRect(306 + inset, 158 + inset, 594 - inset, 230 + inset, 14),
+    drawRect(306 + inset, 240 + inset, 594 - inset, 312 + inset, 14),
     '-draw',
-    drawRect(306 + inset, 250 + inset, 594 - inset, 322 + inset, 14),
+    drawRect(306 + inset, 332 + inset, 594 - inset, 404 + inset, 14),
     '-draw',
-    drawRect(306 + inset, 342 + inset, 594 - inset, 414 + inset, 14),
+    drawRect(306 + inset, 424 + inset, 594 - inset, 496 + inset, 14),
   ];
 }
 
 function sheetArgs(demo: Demo, frame: number): string[] {
   const p = travel(frame);
   const p2 = secondaryTravel(frame);
-  const screen = { left: 286, top: 48, right: 614, bottom: 572 };
+  const screen = {
+    left: phone.screenLeft,
+    top: phone.screenTop,
+    right: phone.screenRight,
+    bottom: phone.screenBottom,
+  };
   const surface = '#fffdf8';
   const muted = '#d9d1c4';
   const text = '#151515';
   const args: string[] = [];
+
+  const clippedRect = (x1: number, y1: number, x2: number, y2: number, radius = 0): string | null => {
+    const left = Math.max(screen.left, Math.min(x1, x2));
+    const right = Math.min(screen.right, Math.max(x1, x2));
+    const top = Math.max(screen.top, Math.min(y1, y2));
+    const bottom = Math.min(screen.bottom, Math.max(y1, y2));
+    if (right - left <= 1 || bottom - top <= 1) return null;
+    return drawRect(left, top, right, bottom, radius);
+  };
+
+  const box = (fill: string, x1: number, y1: number, x2: number, y2: number, radius = 0): string[] => {
+    const rect = clippedRect(x1, y1, x2, y2, radius);
+    return rect ? ['-fill', fill, '-draw', rect] : [];
+  };
 
   const backdrop = (opacity: number): string[] => [
     '-fill',
@@ -238,34 +279,42 @@ function sheetArgs(demo: Demo, frame: number): string[] {
     drawRect(screen.left, screen.top, screen.right, screen.bottom, 24),
   ];
 
-  const handle = (x: number, y: number): string[] => ['-fill', '#bbb3a8', '-draw', drawRect(x, y, x + 72, y + 6, 3)];
+  const handle = (x: number, y: number): string[] => box('#bbb3a8', x, y, x + 72, y + 6, 3);
+
+  const label = (x: number, y: number, value: string, pointSize = 24, fill = text): string[] => {
+    if (y < screen.top + pointSize || y > screen.bottom - 8 || x < screen.left - 2 || x > screen.right - 24) {
+      return [];
+    }
+    return [
+      '-fill',
+      fill,
+      '-pointsize',
+      String(pointSize),
+      '-annotate',
+      `+${Math.max(x, screen.left + 12)}+${y}`,
+      value,
+    ];
+  };
 
   const contentLines = (x: number, y: number, count: number, maxWidth = 210): string[] => {
     const draws = Array.from({ length: count }, (_, index) => {
       const w = maxWidth - (index % 3) * 28;
-      return drawRect(x, y + index * 24, x + w, y + index * 24 + 10, 5);
-    }).join(' ');
-    return ['-fill', muted, '-draw', draws];
+      return clippedRect(x, y + index * 24, x + w, y + index * 24 + 10, 5);
+    }).filter((draw): draw is string => Boolean(draw));
+    return draws.length > 0 ? ['-fill', muted, '-draw', draws.join(' ')] : [];
   };
 
   const bottomSheet = (heightValue: number, detached = false): string[] => {
     const sheetHeight = heightValue * p;
     const y = screen.bottom - sheetHeight;
     const margin = detached ? 20 : 0;
+    if (sheetHeight <= 2) return backdrop(0.22 * p);
+
     return [
       ...backdrop(0.22 * p),
-      '-fill',
-      surface,
-      '-draw',
-      drawRect(screen.left + margin, y, screen.right - margin, screen.bottom + 80, detached ? 24 : 26),
+      ...box(surface, screen.left + margin, y, screen.right - margin, screen.bottom, detached ? 24 : 26),
       ...handle(414, y + 22),
-      '-fill',
-      text,
-      '-pointsize',
-      '24',
-      '-annotate',
-      `+${screen.left + margin + 34}+${y + 76}`,
-      demo.title,
+      ...label(screen.left + margin + 34, y + 76, demo.title),
       ...contentLines(screen.left + margin + 34, y + 108, demo.kind === 'long' ? 12 : 4),
     ];
   };
@@ -279,108 +328,67 @@ function sheetArgs(demo: Demo, frame: number): string[] {
   }
   if (demo.kind === 'persistent') {
     const h = 150 + 170 * p2;
+    const y = screen.bottom - h;
+
     return [
-      '-fill',
-      surface,
-      '-draw',
-      drawRect(screen.left, screen.bottom - h, screen.right, screen.bottom + 80, 24),
-      ...handle(414, screen.bottom - h + 22),
-      '-fill',
-      text,
-      '-pointsize',
-      '22',
-      '-annotate',
-      `+324+${screen.bottom - h + 78}`,
-      'Persistent detent',
-      ...contentLines(324, screen.bottom - h + 112, 4),
+      ...box(surface, screen.left, y, screen.right, screen.bottom, 24),
+      ...handle(414, y + 22),
+      ...label(324, y + 78, 'Persistent detent', 22),
+      ...contentLines(324, y + 112, 4),
     ];
   }
   if (demo.kind === 'keyboard') {
     const y = screen.bottom - 292 * p - 118 * p2;
     return [
       ...backdrop(0.18 * p),
-      '-fill',
-      surface,
-      '-draw',
-      drawRect(screen.left, y, screen.right, screen.bottom + 80, 24),
+      ...box(surface, screen.left, y, screen.right, screen.bottom, 24),
       ...handle(414, y + 22),
-      '-fill',
-      text,
-      '-pointsize',
-      '23',
-      '-annotate',
-      `+324+${y + 72}`,
-      'Reply',
-      '-fill',
-      '#f3eee6',
-      '-draw',
-      drawRect(324, y + 102, 576, y + 150, 12),
-      '-fill',
-      '#1f1f1f',
-      '-draw',
-      drawRect(338, y + 126, 430, y + 132, 3),
-      '-fill',
-      `rgba(210,204,196,${p2.toFixed(2)})`,
-      '-draw',
-      drawRect(screen.left, screen.bottom - 120 * p2, screen.right, screen.bottom, 18),
+      ...label(324, y + 72, 'Reply', 23),
+      ...box('#f3eee6', 324, y + 102, 576, y + 150, 12),
+      ...box('#1f1f1f', 338, y + 126, 430, y + 132, 3),
+      ...box(
+        `rgba(210,204,196,${p2.toFixed(2)})`,
+        screen.left,
+        screen.bottom - 120 * p2,
+        screen.right,
+        screen.bottom,
+        18,
+      ),
     ];
   }
   if (demo.kind === 'top') {
     const h = 240 * p;
-    const y = screen.top - 80 + h;
+    const y = screen.top + h;
+
     return [
       ...backdrop(0.2 * p),
-      '-fill',
-      surface,
-      '-draw',
-      drawRect(screen.left, screen.top - 80, screen.right, y, 24),
+      ...box(surface, screen.left, screen.top, screen.right, y, 24),
       ...handle(414, y - 32),
-      '-fill',
-      text,
-      '-pointsize',
-      '24',
-      '-annotate',
-      '+324+118',
-      'Top controls',
-      ...contentLines(324, 150, 3),
+      ...label(324, screen.top + 70, 'Top controls'),
+      ...contentLines(324, screen.top + 102, 3),
     ];
   }
   if (demo.kind === 'sidebar') {
     const x = screen.left - 230 + 230 * p;
+    const right = x + 230;
+
     return [
       ...backdrop(0.18 * p),
-      '-fill',
-      surface,
-      '-draw',
-      drawRect(x, screen.top, x + 230, screen.bottom, 24),
-      '-fill',
-      text,
-      '-pointsize',
-      '24',
-      '-annotate',
-      `+${x + 28}+96`,
-      'Menu',
-      ...contentLines(x + 28, 134, 10, 150),
+      ...box(surface, x, screen.top, right, screen.bottom, 24),
+      ...label(x + 28, screen.top + 58, 'Menu'),
+      ...contentLines(x + 28, screen.top + 94, 10, 150),
     ];
   }
   if (demo.kind === 'toast') {
+    if (p <= 0.03) return args;
     const y = screen.top + 30 + (1 - p) * 90;
     return [
       '-fill',
       `rgba(0,0,0,${0.08 * p})`,
       '-draw',
       drawRect(screen.left, screen.top, screen.right, screen.bottom, 24),
-      '-fill',
-      '#172126',
-      '-draw',
-      drawRect(324, y, 576, y + 82, 20),
-      '-fill',
-      '#ffffff',
-      '-pointsize',
-      '20',
-      '-annotate',
-      `+352+${y + 48}`,
-      'Saved to itinerary',
+      ...box('#172126', 324, y, 576, y + 82, 20),
+      ...label(352, y + 48, 'Saved to itinerary', 20, '#ffffff'),
     ];
   }
   if (demo.kind === 'stacking') {
@@ -388,22 +396,10 @@ function sheetArgs(demo: Demo, frame: number): string[] {
     const yFront = screen.bottom - 220 * p2;
     return [
       ...backdrop(0.24 * Math.max(p, p2)),
-      '-fill',
-      '#eee8dc',
-      '-draw',
-      drawRect(screen.left + 18, yBack + 16, screen.right - 18, screen.bottom + 80, 24),
-      '-fill',
-      surface,
-      '-draw',
-      drawRect(screen.left, yFront, screen.right, screen.bottom + 80, 24),
+      ...box('#eee8dc', screen.left + 18, yBack + 16, screen.right - 18, screen.bottom, 24),
+      ...box(surface, screen.left, yFront, screen.right, screen.bottom, 24),
       ...handle(414, yFront + 22),
-      '-fill',
-      text,
-      '-pointsize',
-      '23',
-      '-annotate',
-      `+324+${yFront + 76}`,
-      'Second sheet',
+      ...label(324, yFront + 76, 'Second sheet', 23),
       ...contentLines(324, yFront + 110, 4),
     ];
   }
@@ -411,77 +407,38 @@ function sheetArgs(demo: Demo, frame: number): string[] {
   if (demo.kind === 'parallax') {
     const shift = p * 74;
     return [
-      '-fill',
-      '#f2c66d',
-      '-draw',
-      drawRect(316, 210 - shift, 450, 296 - shift, 18),
-      '-fill',
-      '#6f9f8d',
-      '-draw',
-      drawRect(466, 248 - shift * 0.45, 586, 354 - shift * 0.45, 18),
+      ...box('#f2c66d', 316, 292 - shift, 450, 378 - shift, 18),
+      ...box('#6f9f8d', 466, 330 - shift * 0.45, 586, 436 - shift * 0.45, 18),
       ...bottomSheet(190),
     ];
   }
   if (demo.kind === 'page-bottom') {
     const y = screen.bottom - (screen.bottom - screen.top) * p;
     return [
-      '-fill',
-      surface,
-      '-draw',
-      drawRect(screen.left, y, screen.right, screen.bottom, 24),
-      '-fill',
-      demo.accent,
-      '-draw',
-      drawRect(314, y + 34, 586, y + 98, 16),
-      '-fill',
-      text,
-      '-pointsize',
-      '24',
-      '-annotate',
-      `+324+${y + 146}`,
-      'Full page',
+      ...box(surface, screen.left, y, screen.right, screen.bottom, 24),
+      ...box(demo.accent, 314, y + 34, 586, y + 98, 16),
+      ...label(324, y + 146, 'Full page'),
       ...contentLines(324, y + 182, 8),
     ];
   }
   if (demo.kind === 'page') {
     const x = screen.right - (screen.right - screen.left) * p;
     return [
-      '-fill',
-      surface,
-      '-draw',
-      drawRect(x, screen.top, x + (screen.right - screen.left), screen.bottom, 24),
-      '-fill',
-      demo.accent,
-      '-draw',
-      drawRect(x + 28, 84, x + 300, 148, 16),
-      '-fill',
-      text,
-      '-pointsize',
-      '24',
-      '-annotate',
-      `+${x + 38}+196`,
-      'Page transition',
-      ...contentLines(x + 38, 232, 8),
+      ...box(surface, x, screen.top, screen.right, screen.bottom, 24),
+      ...box(demo.accent, x + 28, screen.top + 36, x + 300, screen.top + 100, 16),
+      ...label(x + 38, screen.top + 148, 'Page transition'),
+      ...contentLines(x + 38, screen.top + 184, 8),
     ];
   }
   if (demo.kind === 'lightbox') {
-    const box = 232 * Math.max(p, 0.04);
-    const x = 450 - box / 2;
-    const y = 310 - box / 2;
+    const size = 232 * Math.max(p, 0.04);
+    const x = 450 - size / 2;
+    const y = 310 - size / 2;
     return [
       ...backdrop(0.55 * p),
-      '-fill',
-      '#fffaf0',
-      '-draw',
-      drawRect(x, y, x + box, y + box, 22),
-      '-fill',
-      demo.accent,
-      '-draw',
-      drawRect(x + 18, y + 18, x + box - 18, y + box - 72, 16),
-      '-fill',
-      '#eee3d2',
-      '-draw',
-      drawRect(x + 26, y + box - 48, x + box - 26, y + box - 36, 6),
+      ...box('#fffaf0', x, y, x + size, y + size, 22),
+      ...box(demo.accent, x + 18, y + 18, x + size - 18, y + size - 72, 16),
+      ...box('#eee3d2', x + 26, y + size - 48, x + size - 26, y + size - 36, 6),
     ];
   }
   if (demo.kind === 'card') {
@@ -491,14 +448,8 @@ function sheetArgs(demo: Demo, frame: number): string[] {
     const y = 312 - boxH / 2;
     return [
       ...backdrop(0.2 * p),
-      '-fill',
-      surface,
-      '-draw',
-      drawRect(x, y, x + boxW, y + boxH, 24),
-      '-fill',
-      demo.accent,
-      '-draw',
-      drawRect(x + 24, y + 24, x + boxW - 24, y + 98, 16),
+      ...box(surface, x, y, x + boxW, y + boxH, 24),
+      ...box(demo.accent, x + 24, y + 24, x + boxW - 24, y + 98, 16),
       ...contentLines(x + 24, y + 128, 4, 160),
     ];
   }
@@ -516,9 +467,8 @@ for (const demo of demos) {
 
   try {
     for (let frame = 0; frame < frameCount; frame += 1) {
-      const progress = travel(frame);
       const output = join(tempDir, `frame-${String(frame).padStart(3, '0')}.png`);
-      run('magick', [...baseArgs(demo, progress).slice(1), ...sheetArgs(demo, frame), output]);
+      run('magick', [...baseArgs(demo).slice(1), ...sheetArgs(demo, frame), output]);
     }
 
     const frameGlob = join(tempDir, 'frame-*.png');

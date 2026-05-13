@@ -5,6 +5,8 @@ import type {
   SheetActiveDetentChangeEvent,
   SheetOptions,
   SheetPresentedChangeEvent,
+  SheetSafeAreaEdge,
+  SheetSafeAreaMode,
   SheetTravelEvent,
 } from '../core/types';
 
@@ -36,4 +38,11 @@ export function setupSheet(
   };
 }
 
-export type { SheetOptions, SheetPresentedChangeEvent, SheetActiveDetentChangeEvent, SheetTravelEvent };
+export type {
+  SheetOptions,
+  SheetPresentedChangeEvent,
+  SheetActiveDetentChangeEvent,
+  SheetTravelEvent,
+  SheetSafeAreaEdge,
+  SheetSafeAreaMode,
+};

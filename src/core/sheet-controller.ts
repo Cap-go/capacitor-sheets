@@ -5,6 +5,8 @@ import type {
   SheetOptions,
   SheetPresentedChangeEvent,
   SheetProgressAnimation,
+  SheetSafeAreaEdge,
+  SheetSafeAreaMode,
   SheetTrack,
   SheetTravelEvent,
   SheetTravelStatus,
@@ -57,6 +59,7 @@ const defaultOptions: Required<
     SheetOptions,
     | 'contentPlacement'
     | 'sheetRole'
+    | 'safeArea'
     | 'swipe'
     | 'swipeDismissal'
     | 'swipeOvershoot'
@@ -73,6 +76,7 @@ const defaultOptions: Required<
 > = {
   contentPlacement: 'bottom',
   sheetRole: 'dialog',
+  safeArea: 'auto',
   swipe: true,
   swipeDismissal: true,
   swipeOvershoot: true,
@@ -107,6 +111,27 @@ function normalizeDetents(value: string | string[] | undefined): string[] {
   return parseList(value || null);
 }
 
+const safeAreaEdges: SheetSafeAreaEdge[] = ['top', 'bottom', 'left', 'right'];
+
+function parseSafeArea(value: string | null): SheetSafeAreaMode | undefined {
+  if (value === null) return undefined;
+
+  const normalized = value.trim().toLowerCase();
+  if (!normalized || normalized === 'true' || normalized === 'auto' || normalized === 'all') return 'auto';
+  if (normalized === 'false' || normalized === 'none' || normalized === 'off') return 'none';
+
+  const edges = parseList(normalized).filter((edge): edge is SheetSafeAreaEdge =>
+    safeAreaEdges.includes(edge as SheetSafeAreaEdge),
+  );
+  return edges.length > 0 ? edges : 'auto';
+}
+
+function resolveSafeAreaEdges(value: SheetSafeAreaMode | undefined): SheetSafeAreaEdge[] {
+  if (value === false || value === 'none') return [];
+  if (Array.isArray(value)) return value.filter((edge) => safeAreaEdges.includes(edge));
+  return safeAreaEdges;
+}
+
 function readOptionsFromElement(root: HTMLElement): SheetOptions {
   const placement = parsePlacement(root.getAttribute('content-placement'));
   const defaultActiveDetent = parseNumber(root.getAttribute('default-active-detent'));
@@ -122,6 +147,7 @@ function readOptionsFromElement(root: HTMLElement): SheetOptions {
     detents: normalizeDetents(root.getAttribute('detents') || undefined),
     sheetRole: root.getAttribute('sheet-role') || defaultOptions.sheetRole,
     contentPlacement: placement,
+    safeArea: parseSafeArea(root.getAttribute('safe-area')),
     tracks: parseTracks(root.getAttribute('tracks'), placement === 'center' ? 'bottom' : placement),
     swipe: parseBoolean(root.getAttribute('swipe'), defaultOptions.swipe),
     swipeDismissal: parseBoolean(root.getAttribute('swipe-dismissal'), defaultOptions.swipeDismissal),
@@ -195,15 +221,24 @@ export class SheetController {
   private pointerTravel: PointerTravel | null = null;
   private connected = false;
   private lockedScroll = false;
+  private previousBodyOverflow = '';
+  private previousBodyTouchAction = '';
   private inertedElements = new Map<HTMLElement, string | null>();
   private previousFocus: Element | null = null;
   private hasThemeDimmer = false;
   private stackId: string | null = null;
+  private documentListenersAttached = false;
+  private viewListenersElement: HTMLElement | null = null;
+  private visualViewportListenersAttached = false;
 
   private readonly handleVisualViewportResize = (): void => {
     const view = this.parts.view;
     const visualViewport = this.root.ownerDocument.defaultView?.visualViewport;
-    if (!view || !visualViewport || this.options.nativeFocusScrollPrevention === false) return;
+    if (!view) return;
+    if (!visualViewport || this.options.nativeFocusScrollPrevention === false) {
+      view.style.setProperty('--cap-sheet-keyboard-offset', '0em');
+      return;
+    }
 
     const layoutHeight = this.root.ownerDocument.documentElement.clientHeight;
     const keyboardOffset = Math.max(0, layoutHeight - visualViewport.height - visualViewport.offsetTop);
@@ -233,6 +268,9 @@ export class SheetController {
     if (!this.presented || this.options.swipe === false || this.options.contentPlacement === 'center') return;
     if (!(event.target instanceof Element)) return;
     if (!this.parts.content?.contains(event.target) && event.target !== this.parts.backdrop) return;
+    if (this.options.nativeEdgeSwipePrevention !== false && this.isNativeEdgePointer(event)) {
+      event.preventDefault();
+    }
 
     this.remeasure();
     this.pointerTravel = {
@@ -380,6 +418,8 @@ export class SheetController {
 
     this.parts.view?.setAttribute('content-placement', placement);
     this.parts.view?.setAttribute('role', this.options.sheetRole || 'dialog');
+    this.applySafeArea();
+    this.handleVisualViewportResize();
     if (this.parts.content) {
       this.parts.content.setAttribute('aria-modal', attributeBoolean(this.options.inertOutside !== false));
     }
@@ -391,6 +431,11 @@ export class SheetController {
   registerPart(part: keyof Omit<SheetParts, 'outlets' | 'islands' | 'externalOverlays'>, element: HTMLElement): void {
     this.parts[part] = element;
     this.configure(this.options);
+    if (this.connected && part === 'view') {
+      this.addViewListeners();
+      this.addVisualViewportListeners();
+      this.handleVisualViewportResize();
+    }
     this.remeasure();
     this.updateDomState(false);
   }
@@ -398,6 +443,7 @@ export class SheetController {
   /** Unregister a view, backdrop, content, or semantic part. */
   unregisterPart(part: keyof Omit<SheetParts, 'outlets' | 'islands' | 'externalOverlays'>, element: HTMLElement): void {
     if (this.parts[part] === element) {
+      if (part === 'view') this.removeViewListeners();
       this.parts[part] = undefined;
     }
   }
@@ -604,12 +650,14 @@ export class SheetController {
         progress *
           Number.parseFloat(getComputedStyle(backdrop).getPropertyValue('--cap-sheet-backdrop-opacity') || '0.44'),
       );
+      backdrop.style.pointerEvents = this.hasInteractiveOutside() ? 'none' : 'auto';
     }
 
     if (view) {
-      view.style.pointerEvents = progress > 0.01 ? 'auto' : 'none';
+      view.style.pointerEvents = progress > 0.01 && !this.hasInteractiveOutside() ? 'auto' : 'none';
       view.dataset.presented = this.presented ? 'true' : 'false';
       view.dataset.status = status;
+      view.dataset.outsideInteractive = this.hasInteractiveOutside() ? 'true' : 'false';
     }
 
     this.applyOutletAnimations(progress);
@@ -727,28 +775,102 @@ export class SheetController {
     return nearest;
   }
 
+  private hasInteractiveOutside(): boolean {
+    return this.options.inertOutside === false && this.options.closeOnOutsideClick === false;
+  }
+
+  private isNativeEdgePointer(event: PointerEvent): boolean {
+    const view = this.parts.view;
+    if (!view) return false;
+
+    const rect = view.getBoundingClientRect();
+    const edgeSize = Math.max(20, rect.width * 0.04);
+    return (
+      event.clientX - rect.left <= edgeSize ||
+      rect.right - event.clientX <= edgeSize ||
+      event.clientY - rect.top <= edgeSize ||
+      rect.bottom - event.clientY <= edgeSize
+    );
+  }
+
+  private applySafeArea(): void {
+    const view = this.parts.view;
+    if (!view) return;
+
+    const edges = new Set(resolveSafeAreaEdges(this.options.safeArea));
+    view.dataset.safeArea = edges.size > 0 ? Array.from(edges).join(' ') : 'none';
+    for (const edge of safeAreaEdges) {
+      view.style.setProperty(
+        `--cap-sheet-applied-safe-area-${edge}`,
+        edges.has(edge) ? `var(--cap-sheet-safe-area-${edge})` : '0em',
+      );
+    }
+  }
+
   private addGlobalListeners(): void {
     const doc = this.root.ownerDocument;
-    doc.addEventListener('keydown', this.handleDocumentKeyDown);
-    this.parts.view?.addEventListener('click', this.handleViewClick);
-    this.parts.view?.addEventListener('pointerdown', this.handlePointerDown);
-    this.parts.view?.addEventListener('pointermove', this.handlePointerMove, { passive: false });
-    this.parts.view?.addEventListener('pointerup', this.handlePointerUp);
-    this.parts.view?.addEventListener('pointercancel', this.handlePointerUp);
-    this.parts.view?.addEventListener('wheel', this.handleWheel, { passive: false });
-    this.root.ownerDocument.defaultView?.visualViewport?.addEventListener('resize', this.handleVisualViewportResize);
+    if (!this.documentListenersAttached) {
+      doc.addEventListener('keydown', this.handleDocumentKeyDown);
+      this.documentListenersAttached = true;
+    }
+    this.addViewListeners();
+    this.addVisualViewportListeners();
   }
 
   private removeGlobalListeners(): void {
     const doc = this.root.ownerDocument;
-    doc.removeEventListener('keydown', this.handleDocumentKeyDown);
-    this.parts.view?.removeEventListener('click', this.handleViewClick);
-    this.parts.view?.removeEventListener('pointerdown', this.handlePointerDown);
-    this.parts.view?.removeEventListener('pointermove', this.handlePointerMove);
-    this.parts.view?.removeEventListener('pointerup', this.handlePointerUp);
-    this.parts.view?.removeEventListener('pointercancel', this.handlePointerUp);
-    this.parts.view?.removeEventListener('wheel', this.handleWheel);
-    this.root.ownerDocument.defaultView?.visualViewport?.removeEventListener('resize', this.handleVisualViewportResize);
+    if (this.documentListenersAttached) {
+      doc.removeEventListener('keydown', this.handleDocumentKeyDown);
+      this.documentListenersAttached = false;
+    }
+    this.removeViewListeners();
+    this.removeVisualViewportListeners();
+  }
+
+  private addViewListeners(): void {
+    const view = this.parts.view;
+    if (!view || this.viewListenersElement === view) return;
+
+    this.removeViewListeners();
+    view.addEventListener('click', this.handleViewClick);
+    view.addEventListener('pointerdown', this.handlePointerDown);
+    view.addEventListener('pointermove', this.handlePointerMove, { passive: false });
+    view.addEventListener('pointerup', this.handlePointerUp);
+    view.addEventListener('pointercancel', this.handlePointerUp);
+    view.addEventListener('wheel', this.handleWheel, { passive: false });
+    this.viewListenersElement = view;
+  }
+
+  private removeViewListeners(): void {
+    const view = this.viewListenersElement;
+    if (!view) return;
+
+    view.removeEventListener('click', this.handleViewClick);
+    view.removeEventListener('pointerdown', this.handlePointerDown);
+    view.removeEventListener('pointermove', this.handlePointerMove);
+    view.removeEventListener('pointerup', this.handlePointerUp);
+    view.removeEventListener('pointercancel', this.handlePointerUp);
+    view.removeEventListener('wheel', this.handleWheel);
+    this.viewListenersElement = null;
+  }
+
+  private addVisualViewportListeners(): void {
+    const visualViewport = this.root.ownerDocument.defaultView?.visualViewport;
+    if (!visualViewport || this.visualViewportListenersAttached) return;
+
+    visualViewport.addEventListener('resize', this.handleVisualViewportResize);
+    visualViewport.addEventListener('scroll', this.handleVisualViewportResize);
+    this.visualViewportListenersAttached = true;
+    this.handleVisualViewportResize();
+  }
+
+  private removeVisualViewportListeners(): void {
+    const visualViewport = this.root.ownerDocument.defaultView?.visualViewport;
+    if (!visualViewport || !this.visualViewportListenersAttached) return;
+
+    visualViewport.removeEventListener('resize', this.handleVisualViewportResize);
+    visualViewport.removeEventListener('scroll', this.handleVisualViewportResize);
+    this.visualViewportListenersAttached = false;
   }
 
   private updateDomState(presented: boolean): void {
@@ -821,6 +943,8 @@ export class SheetController {
   private lockPage(): void {
     if (this.lockedScroll) return;
     const body = this.root.ownerDocument.body;
+    this.previousBodyOverflow = body.style.overflow;
+    this.previousBodyTouchAction = body.style.touchAction;
     body.dataset.capSheetScrollLocked = 'true';
     body.style.overflow = 'hidden';
     body.style.touchAction = 'none';
@@ -831,8 +955,10 @@ export class SheetController {
     if (!this.lockedScroll) return;
     const body = this.root.ownerDocument.body;
     delete body.dataset.capSheetScrollLocked;
-    body.style.overflow = '';
-    body.style.touchAction = '';
+    body.style.overflow = this.previousBodyOverflow;
+    body.style.touchAction = this.previousBodyTouchAction;
+    this.previousBodyOverflow = '';
+    this.previousBodyTouchAction = '';
     this.lockedScroll = false;
   }
 
