@@ -13,7 +13,7 @@ export type SheetAnimationPreset = 'gentle' | 'smooth' | 'snappy';
 /** Easing string accepted by the Web Animations API. */
 export type SheetEasing = 'linear' | 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | string;
 
-/** Declarative transform/opacity animation driven by sheet progress. */
+/** Declarative transform/opacity animation driven by sheet travel or stack progress. */
 export type SheetProgressAnimation = Record<
   string,
   | string
@@ -131,6 +131,22 @@ export interface SheetTravelEvent {
   offset: number;
   /** Current travel status. */
   status: SheetTravelStatus;
+}
+
+/** Detail emitted when the sheet travel status changes. */
+export interface SheetTravelStatusChangeEvent {
+  /** Previous travel status. */
+  previousStatus: SheetTravelStatus;
+  /** Current travel status. */
+  status: SheetTravelStatus;
+}
+
+/** Detail emitted when the available detent travel range changes. */
+export interface SheetTravelRangeChangeEvent {
+  /** Detent offsets from dismissed to fully presented, expressed in em. */
+  offsets: number[];
+  /** Number of active travel stops, including dismissed and fully presented stops. */
+  count: number;
 }
 
 /** Imperative controller exposed by `<cap-scroll>`. */

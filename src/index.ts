@@ -23,6 +23,8 @@ import type {
   CapSheetHandle,
   CapSheetOutlet,
   CapSheetPortal,
+  CapSheetSpecialWrapper,
+  CapSheetSpecialWrapperContent,
   CapSheetStack,
   CapSheetTitle,
   CapSheetTrigger,
@@ -49,6 +51,8 @@ export {
   CapSheetHandle,
   CapSheetOutlet,
   CapSheetPortal,
+  CapSheetSpecialWrapper,
+  CapSheetSpecialWrapperContent,
   CapSheetStack,
   CapSheetTitle,
   CapSheetTrigger,
@@ -68,7 +72,9 @@ export type {
   SheetProgressAnimation,
   SheetTrack,
   SheetTravelEvent,
+  SheetTravelRangeChangeEvent,
   SheetTravelStatus,
+  SheetTravelStatusChangeEvent,
   SheetTriggerAction,
 } from './core/types';
 
@@ -92,6 +98,8 @@ declare global {
     'cap-sheet-handle': CapSheetHandle;
     'cap-sheet-title': CapSheetTitle;
     'cap-sheet-description': CapSheetDescription;
+    'cap-sheet-special-wrapper': CapSheetSpecialWrapper;
+    'cap-sheet-special-wrapper-content': CapSheetSpecialWrapperContent;
     'cap-sheet-stack': CapSheetStack;
     'cap-sheet-outlet': CapSheetOutlet;
     'cap-scroll': CapScroll;

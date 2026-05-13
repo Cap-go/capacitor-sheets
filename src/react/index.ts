@@ -110,6 +110,8 @@ interface CapSheetsIntrinsicElements {
   };
   'cap-sheet-title': CapElementAttributes & { for?: string };
   'cap-sheet-description': CapElementAttributes & { for?: string };
+  'cap-sheet-special-wrapper': CapElementAttributes;
+  'cap-sheet-special-wrapper-content': CapElementAttributes;
   'cap-sheet-stack': CapElementAttributes;
   'cap-sheet-outlet': CapElementAttributes & { for?: string };
   'cap-scroll': CapElementAttributes & { axis?: 'x' | 'y' };

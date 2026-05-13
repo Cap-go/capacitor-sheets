@@ -15,6 +15,7 @@ export class CapSheetStack extends HTMLElement {
 /** Element that receives `--cap-sheet-progress` and optional travel animations. */
 export class CapSheetOutlet extends HTMLElement {
   travelAnimation?: SheetProgressAnimation;
+  stackingAnimation?: SheetProgressAnimation;
 
   connectedCallback(): void {
     injectCapSheetStyles(this.ownerDocument);
@@ -23,6 +24,22 @@ export class CapSheetOutlet extends HTMLElement {
 
   disconnectedCallback(): void {
     getSheetFromElement(this)?.controller.unregisterOutlet(this);
+  }
+}
+
+/** Composition wrapper for detached sheets, cards, pages, lightboxes, and custom nested layouts. */
+export class CapSheetSpecialWrapper extends HTMLElement {
+  connectedCallback(): void {
+    injectCapSheetStyles(this.ownerDocument);
+    this.style.display ||= 'contents';
+  }
+}
+
+/** Content wrapper paired with `<cap-sheet-special-wrapper>`. */
+export class CapSheetSpecialWrapperContent extends HTMLElement {
+  connectedCallback(): void {
+    injectCapSheetStyles(this.ownerDocument);
+    this.style.display ||= 'contents';
   }
 }
 

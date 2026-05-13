@@ -8,6 +8,8 @@ import {
   CapFixed,
   CapIsland,
   CapSheetOutlet,
+  CapSheetSpecialWrapper,
+  CapSheetSpecialWrapperContent,
   CapSheetStack,
   CapVisuallyHidden,
 } from './sheet-context';
@@ -32,6 +34,8 @@ defineElement('cap-sheet-bleeding-background', CapSheetBleedingBackground);
 defineElement('cap-sheet-handle', CapSheetHandle);
 defineElement('cap-sheet-title', CapSheetTitle);
 defineElement('cap-sheet-description', CapSheetDescription);
+defineElement('cap-sheet-special-wrapper', CapSheetSpecialWrapper);
+defineElement('cap-sheet-special-wrapper-content', CapSheetSpecialWrapperContent);
 defineElement('cap-sheet-stack', CapSheetStack);
 defineElement('cap-sheet-outlet', CapSheetOutlet);
 defineElement('cap-scroll', CapScroll);
@@ -57,6 +61,8 @@ export {
   CapSheetHandle,
   CapSheetOutlet,
   CapSheetPortal,
+  CapSheetSpecialWrapper,
+  CapSheetSpecialWrapperContent,
   CapSheetStack,
   CapSheetTitle,
   CapSheetTrigger,

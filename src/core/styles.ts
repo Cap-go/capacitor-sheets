@@ -20,6 +20,8 @@ const CSS = `
 
 cap-sheet,
 cap-sheet-portal,
+cap-sheet-special-wrapper,
+cap-sheet-special-wrapper-content,
 cap-sheet-stack {
   display: contents;
 }
@@ -34,6 +36,8 @@ cap-sheet-view {
   pointer-events: none;
   touch-action: none;
   contain: layout style;
+  box-sizing: border-box;
+  padding-block-end: var(--cap-sheet-keyboard-offset, 0em);
 }
 
 cap-sheet-view[content-placement="top"] {
@@ -78,7 +82,7 @@ cap-sheet-content {
   position: relative;
   display: block;
   width: min(100%, 34em);
-  max-height: var(--cap-sheet-100-lvh-dvh-pct);
+  max-height: calc(var(--cap-sheet-100-lvh-dvh-pct) - var(--cap-sheet-keyboard-offset, 0em));
   color: CanvasText;
   background: var(--cap-sheet-surface);
   border-radius: var(--cap-sheet-radius) var(--cap-sheet-radius) 0 0;

@@ -200,6 +200,16 @@ export class SheetController {
   private hasThemeDimmer = false;
   private stackId: string | null = null;
 
+  private readonly handleVisualViewportResize = (): void => {
+    const view = this.parts.view;
+    const visualViewport = this.root.ownerDocument.defaultView?.visualViewport;
+    if (!view || !visualViewport || this.options.nativeFocusScrollPrevention === false) return;
+
+    const layoutHeight = this.root.ownerDocument.documentElement.clientHeight;
+    const keyboardOffset = Math.max(0, layoutHeight - visualViewport.height - visualViewport.offsetTop);
+    view.style.setProperty('--cap-sheet-keyboard-offset', `${toEm(view, keyboardOffset)}em`);
+  };
+
   private readonly handleDocumentKeyDown = (event: KeyboardEvent): void => {
     if (!this.presented) return;
     if (event.key === 'Escape' && this.options.closeOnEscape !== false) {
@@ -253,7 +263,7 @@ export class SheetController {
     if (!travel.dragging) {
       if (Math.abs(delta) < 6 || Math.abs(crossDelta) > Math.abs(delta) * 1.25) return;
       travel.dragging = true;
-      this.status = 'dragging';
+      this.setStatus('dragging');
       dispatch(this.root, 'cap-sheet-drag-start', this.getTravelEvent());
     }
 
@@ -331,7 +341,7 @@ export class SheetController {
     const nextPresented = this.options.presented ?? this.options.defaultPresented ?? false;
     this.activeDetent = this.resolveInitialDetent();
     this.presented = nextPresented;
-    this.status = nextPresented ? 'idle' : 'idle';
+    this.setStatus('idle');
     this.remeasure();
     this.applyOffset(
       nextPresented ? this.detentOffsetsPx[this.activeDetent] || 0 : this.detentOffsetsPx[0] || 0,
@@ -430,13 +440,13 @@ export class SheetController {
     this.lockPage();
     this.applyInert();
     this.retainThemeDimmer();
-    this.status = 'entering';
+    this.setStatus('entering');
     dispatch(this.root, 'cap-sheet-present', this.getTravelEvent());
     await this.animateTo(this.detentOffsetsPx[this.activeDetent] || 0, {
       ...(this.options.enteringAnimationSettings || {}),
       ...(options.animation || {}),
     });
-    this.status = 'idle';
+    this.setStatus('idle');
     this.focusInitialElement();
     this.emitPresentedChange(true, options.source || 'programmatic');
     this.emitActiveDetentChange(this.activeDetent, 0);
@@ -451,13 +461,13 @@ export class SheetController {
     const previous = this.activeDetent;
     this.presented = false;
     this.activeDetent = 0;
-    this.status = 'exiting';
+    this.setStatus('exiting');
     dispatch(this.root, 'cap-sheet-dismiss', this.getTravelEvent());
     await this.animateTo(this.detentOffsetsPx[0] || this.hiddenOffsetPx, {
       ...(this.options.exitingAnimationSettings || {}),
       ...(options.animation || {}),
     });
-    this.status = 'idle';
+    this.setStatus('idle');
     this.updateDomState(false);
     this.unlockPage();
     this.clearInert();
@@ -492,12 +502,12 @@ export class SheetController {
 
     const previous = this.activeDetent;
     this.activeDetent = target;
-    this.status = 'settling';
+    this.setStatus('settling');
     await this.animateTo(this.detentOffsetsPx[target] || 0, {
       ...(this.options.steppingAnimationSettings || {}),
       ...(options.animation || {}),
     });
-    this.status = 'idle';
+    this.setStatus('idle');
     if (previous !== target) {
       this.emitActiveDetentChange(target, previous);
     }
@@ -541,6 +551,10 @@ export class SheetController {
     offsets.push(0);
     this.detentOffsetsPx = offsets;
     this.activeDetent = clamp(this.activeDetent, this.options.swipeDismissal === false ? 1 : 0, offsets.length - 1);
+    dispatch(this.root, 'cap-sheet-travel-range-change', {
+      offsets: offsets.map((offset) => toEm(content, offset)),
+      count: offsets.length,
+    });
   }
 
   /** Read current normalized travel details. */
@@ -564,7 +578,7 @@ export class SheetController {
 
   private applyOffset(offsetPx: number, status: SheetTravelStatus): void {
     this.currentOffsetPx = offsetPx;
-    this.status = status;
+    this.setStatus(status);
     const content = this.parts.content;
     const backdrop = this.parts.backdrop;
     const view = this.parts.view;
@@ -722,6 +736,7 @@ export class SheetController {
     this.parts.view?.addEventListener('pointerup', this.handlePointerUp);
     this.parts.view?.addEventListener('pointercancel', this.handlePointerUp);
     this.parts.view?.addEventListener('wheel', this.handleWheel, { passive: false });
+    this.root.ownerDocument.defaultView?.visualViewport?.addEventListener('resize', this.handleVisualViewportResize);
   }
 
   private removeGlobalListeners(): void {
@@ -733,6 +748,7 @@ export class SheetController {
     this.parts.view?.removeEventListener('pointerup', this.handlePointerUp);
     this.parts.view?.removeEventListener('pointercancel', this.handlePointerUp);
     this.parts.view?.removeEventListener('wheel', this.handleWheel);
+    this.root.ownerDocument.defaultView?.visualViewport?.removeEventListener('resize', this.handleVisualViewportResize);
   }
 
   private updateDomState(presented: boolean): void {
@@ -945,8 +961,36 @@ export class SheetController {
     stack.forEach((controller, index) => {
       controller.parts.view?.style.setProperty('--cap-sheet-z-index', String(1000 + index * 2));
       const depth = presented.length - presented.indexOf(controller) - 1;
-      controller.parts.content?.style.setProperty('--cap-sheet-stack-depth', String(Math.max(depth, 0)));
+      const stackDepth = Math.max(depth, 0);
+      controller.parts.content?.style.setProperty('--cap-sheet-stack-depth', String(stackDepth));
+      controller.applyStackingAnimations(stackDepth);
     });
+  }
+
+  private applyStackingAnimations(depth: number): void {
+    const progress = clamp(depth, 0, 4) / 4;
+    for (const outlet of this.parts.outlets) {
+      const animation = (outlet as HTMLElement & { stackingAnimation?: SheetProgressAnimation }).stackingAnimation;
+      if (!animation) continue;
+      for (const [property, value] of Object.entries(animation)) {
+        if (value === null || value === undefined) continue;
+        if (Array.isArray(value)) {
+          outlet.style.setProperty(property, tween(value[0], value[1], progress));
+        } else if (typeof value === 'function') {
+          const next = value({ progress, tween: (start, end) => tween(start, end, progress) });
+          if (next !== null && next !== undefined) outlet.style.setProperty(property, String(next));
+        } else {
+          outlet.style.setProperty(property, String(value));
+        }
+      }
+    }
+  }
+
+  private setStatus(status: SheetTravelStatus): void {
+    if (this.status === status) return;
+    const previousStatus = this.status;
+    this.status = status;
+    dispatch(this.root, 'cap-sheet-travel-status-change', { previousStatus, status });
   }
 }
 

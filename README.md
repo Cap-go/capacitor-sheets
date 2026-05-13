@@ -9,9 +9,110 @@
 
 Framework-agnostic sheets, drawers, dialogs, scroll helpers, and overlay primitives for Capacitor apps.
 
-![Capgo Capacitor Sheets demo](./docs/capacitor-sheets-demo.webp)
-
 This package is inspired by the public Silk feature surface, but it is not a wrapper around Silk and does not include Silk source code. It uses platform web APIs and custom elements so the same primitives work in React, Vue, Angular, Svelte, Solid, or plain TypeScript.
+
+## Usecase Demos
+
+Each usecase has its own animated WebP demo. These match the public Silk-style example set: long sheets, detents, sidebars, bottom/top sheets, keyboard-aware sheets, toasts, detached sheets, full pages, stacking, depth, parallax, lightboxes, persistent detents, and cards.
+
+<table>
+  <tr>
+    <td>
+      <img src="./docs/demos/long-sheet.webp" alt="Long Sheet demo" />
+      <br />
+      <strong>Long Sheet</strong>
+    </td>
+    <td>
+      <img src="./docs/demos/sheet-with-detent.webp" alt="Sheet with Detent demo" />
+      <br />
+      <strong>Sheet with Detent</strong>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="./docs/demos/sidebar.webp" alt="Sidebar demo" />
+      <br />
+      <strong>Sidebar</strong>
+    </td>
+    <td>
+      <img src="./docs/demos/bottom-sheet.webp" alt="Bottom Sheet demo" />
+      <br />
+      <strong>Bottom Sheet</strong>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="./docs/demos/sheet-with-keyboard.webp" alt="Sheet with Keyboard demo" />
+      <br />
+      <strong>Sheet with Keyboard</strong>
+    </td>
+    <td>
+      <img src="./docs/demos/toast.webp" alt="Toast demo" />
+      <br />
+      <strong>Toast</strong>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="./docs/demos/detached-sheet.webp" alt="Detached Sheet demo" />
+      <br />
+      <strong>Detached Sheet</strong>
+    </td>
+    <td>
+      <img src="./docs/demos/page-from-bottom.webp" alt="Page from Bottom demo" />
+      <br />
+      <strong>Page from Bottom</strong>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="./docs/demos/top-sheet.webp" alt="Top Sheet demo" />
+      <br />
+      <strong>Top Sheet</strong>
+    </td>
+    <td>
+      <img src="./docs/demos/sheet-with-stacking.webp" alt="Sheet with Stacking demo" />
+      <br />
+      <strong>Sheet with Stacking</strong>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="./docs/demos/sheet-with-depth.webp" alt="Sheet with Depth demo" />
+      <br />
+      <strong>Sheet with Depth</strong>
+    </td>
+    <td>
+      <img src="./docs/demos/parallax-page.webp" alt="Parallax Page demo" />
+      <br />
+      <strong>Parallax Page</strong>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="./docs/demos/page.webp" alt="Page demo" />
+      <br />
+      <strong>Page</strong>
+    </td>
+    <td>
+      <img src="./docs/demos/lightbox.webp" alt="Lightbox demo" />
+      <br />
+      <strong>Lightbox</strong>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="./docs/demos/persistent-sheet-with-detent.webp" alt="Persistent Sheet with Detent demo" />
+      <br />
+      <strong>Persistent Sheet with Detent</strong>
+    </td>
+    <td>
+      <img src="./docs/demos/card.webp" alt="Card demo" />
+      <br />
+      <strong>Card</strong>
+    </td>
+  </tr>
+</table>
 
 ## Features
 
@@ -25,6 +126,27 @@ This package is inspired by the public Silk feature surface, but it is not a wra
 - **Scroll primitives** with progress/distance helpers.
 - **Theme color dimming** for Capacitor WebViews and mobile browsers.
 - **Modern CSS defaults** authored with `em`-based sizing, with no design-system lock-in.
+
+## Usecase Coverage
+
+| Usecase                      | Capgo Sheets pattern                                                     |
+| ---------------------------- | ------------------------------------------------------------------------ |
+| Long Sheet                   | `cap-sheet` + `cap-scroll` or naturally scrolling `cap-sheet-content`    |
+| Sheet with Detent            | `detents="18em 32em"` and `stepTo()` / `cap-sheet-trigger action="step"` |
+| Sidebar                      | `content-placement="left"` or `content-placement="right"`                |
+| Bottom Sheet                 | default `content-placement="bottom"`                                     |
+| Sheet with Keyboard          | visual viewport offset support via `native-focus-scroll-prevention`      |
+| Toast                        | `inert-outside="false"`, `focus-trap="false"`, detached content styling  |
+| Detached Sheet               | rounded content with margins and `cap-sheet-special-wrapper` composition |
+| Page from Bottom             | full-height bottom sheet content                                         |
+| Top Sheet                    | `content-placement="top"`                                                |
+| Sheet with Stacking          | `cap-sheet-stack`, stack depth variables, and stacking animation hooks   |
+| Sheet with Depth             | `cap-sheet-outlet` progress variables and `travelAnimation`              |
+| Parallax Page                | `cap-sheet-outlet` + `cap-scroll` progress composition                   |
+| Page                         | full-viewport sheet content or side-entering `content-placement`         |
+| Lightbox                     | `content-placement="center"` plus backdrop and media content             |
+| Persistent Sheet with Detent | `default-presented`, `swipe-dismissal="false"`, `inert-outside="false"`  |
+| Card                         | `content-placement="center"` with compact content                        |
 
 ## Installation
 
@@ -236,6 +358,7 @@ Core elements:
 - `cap-sheet-bleeding-background`: background extension for rounded edge sheets.
 - `cap-sheet-handle`: draggable and keyboard-accessible detent handle.
 - `cap-sheet-title` and `cap-sheet-description`: accessible naming.
+- `cap-sheet-special-wrapper` and `cap-sheet-special-wrapper-content`: composition hooks for detached sheets, cards, lightboxes, and custom page layouts.
 - `cap-sheet-stack`: groups sheets for stacked depth.
 - `cap-sheet-outlet`: receives sheet progress variables and optional `travelAnimation`.
 - `cap-scroll` and `cap-scroll-content`: scroll progress helpers.
@@ -246,6 +369,8 @@ Important events:
 - `cap-sheet-presented-change`
 - `cap-sheet-active-detent-change`
 - `cap-sheet-travel`
+- `cap-sheet-travel-status-change`
+- `cap-sheet-travel-range-change`
 - `cap-sheet-drag-start`
 - `cap-sheet-drag-end`
 - `cap-scroll`
@@ -267,6 +392,7 @@ The public TypeScript API is documented with TSDoc in `src/core/types.ts`, and g
 
 ```bash
 npm install
+npm run render:demos
 npm run build
 npm run dev:examples -- react vue svelte angular solid
 ```

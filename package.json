@@ -47,6 +47,7 @@
     "dev:examples": "bun scripts/dev-frameworks.ts",
     "dev:examples:all": "bun scripts/dev-frameworks.ts --all",
     "dev:examples:all:install": "bun scripts/dev-frameworks.ts --all --install",
+    "render:demos": "bun scripts/render-demo-webps.ts",
     "typecheck": "tsc --noEmit",
     "verify": "bun run verify:web",
     "verify:web": "bun run build && bun run typecheck",
