@@ -118,11 +118,11 @@ Each usecase has its own animated WebP demo. These match the public Silk-style e
 
 The examples can be opened directly in StackBlitz:
 
-- [React playground](https://stackblitz.com/github/Cap-go/capacitor-sheets/tree/main/examples/react-app?file=src/main.tsx)
-- [Vue playground](https://stackblitz.com/github/Cap-go/capacitor-sheets/tree/main/examples/vue-app?file=src/App.vue)
-- [Angular playground](https://stackblitz.com/github/Cap-go/capacitor-sheets/tree/main/examples/angular-app?file=src/app/app.component.ts)
-- [Svelte playground](https://stackblitz.com/github/Cap-go/capacitor-sheets/tree/main/examples/svelte-app?file=src/App.svelte)
-- [Solid playground](https://stackblitz.com/github/Cap-go/capacitor-sheets/tree/main/examples/solid-app?file=src/main.tsx)
+- [React playground](https://stackblitz.com/github/Cap-go/capacitor-sheets?configPath=examples/react-app&file=src/main.tsx&startScript=dev)
+- [Vue playground](https://stackblitz.com/github/Cap-go/capacitor-sheets?configPath=examples/vue-app&file=src/App.vue&startScript=dev)
+- [Angular playground](https://stackblitz.com/github/Cap-go/capacitor-sheets?configPath=examples/angular-app&file=src/app/app.component.ts&startScript=dev)
+- [Svelte playground](https://stackblitz.com/github/Cap-go/capacitor-sheets?configPath=examples/svelte-app&file=src/App.svelte&startScript=dev)
+- [Solid playground](https://stackblitz.com/github/Cap-go/capacitor-sheets?configPath=examples/solid-app&file=src/main.tsx&startScript=dev)
 
 ## Features
 

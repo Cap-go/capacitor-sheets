@@ -6,7 +6,12 @@
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "strict": true,
     "skipLibCheck": true,
-    "noEmit": true
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@capgo/capacitor-sheets": ["../../src/index.ts"],
+      "@capgo/capacitor-sheets/vue": ["../../src/vue/index.ts"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.vue"]
 }

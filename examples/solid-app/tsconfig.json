@@ -8,7 +8,12 @@
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
     "skipLibCheck": true,
-    "noEmit": true
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@capgo/capacitor-sheets": ["../../src/index.ts"],
+      "@capgo/capacitor-sheets/solid": ["../../src/solid/index.ts"]
+    }
   },
   "include": ["src"]
 }
