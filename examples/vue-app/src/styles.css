@@ -1,0 +1,45 @@
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.page {
+  min-height: 100%;
+  background: #eaf2ef;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1em;
+}
+
+.scene {
+  display: grid;
+  place-items: center;
+  height: 36em;
+  margin: 1em;
+  border-radius: 1.25em;
+  background: #789ca8;
+  color: white;
+  font-size: 2em;
+  font-weight: 800;
+}
+
+.sheet {
+  padding: 0 1.25em 1.25em;
+}
+
+cap-sheet-trigger {
+  display: inline-grid;
+  place-items: center;
+  min-height: 2.75em;
+  padding-inline: 1em;
+  border-radius: 999em;
+  background: #13201c;
+  color: white;
+}

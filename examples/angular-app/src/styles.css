@@ -1,0 +1,20 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: #eef0f6;
+}
+
+cap-sheet-trigger {
+  display: inline-grid;
+  place-items: center;
+  min-height: 2.75em;
+  padding-inline: 1em;
+  border-radius: 999em;
+  background: #18162a;
+  color: white;
+}

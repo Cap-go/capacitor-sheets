@@ -1,0 +1,45 @@
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.page {
+  min-height: 100%;
+  background: #edf2ea;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1em;
+}
+
+.panel {
+  display: grid;
+  place-items: center;
+  height: 36em;
+  margin: 1em;
+  border-radius: 1.25em;
+  background: #7c9b78;
+  color: white;
+  font-size: 2em;
+  font-weight: 800;
+}
+
+.sheet {
+  padding: 0 1.25em 1.25em;
+}
+
+cap-sheet-trigger {
+  display: inline-grid;
+  place-items: center;
+  min-height: 2.75em;
+  padding-inline: 1em;
+  border-radius: 999em;
+  background: #152713;
+  color: white;
+}

@@ -1,0 +1,126 @@
+{
+  "name": "@capgo/capacitor-sheets",
+  "version": "8.0.0",
+  "description": "Framework-agnostic swipeable sheets, drawers, dialogs, and scroll primitives for Capacitor apps",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.mjs",
+      "require": "./dist/react/index.js"
+    },
+    "./vue": {
+      "types": "./dist/vue/index.d.ts",
+      "import": "./dist/vue/index.mjs",
+      "require": "./dist/vue/index.js"
+    },
+    "./angular": {
+      "types": "./dist/angular/index.d.ts",
+      "import": "./dist/angular/index.mjs",
+      "require": "./dist/angular/index.js"
+    },
+    "./svelte": {
+      "types": "./dist/svelte/index.d.ts",
+      "import": "./dist/svelte/index.mjs",
+      "require": "./dist/svelte/index.js"
+    },
+    "./solid": {
+      "types": "./dist/solid/index.d.ts",
+      "import": "./dist/solid/index.mjs",
+      "require": "./dist/solid/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "docs"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "dev:examples": "bun scripts/dev-frameworks.ts",
+    "dev:examples:all": "bun scripts/dev-frameworks.ts --all",
+    "dev:examples:all:install": "bun scripts/dev-frameworks.ts --all --install",
+    "typecheck": "tsc --noEmit",
+    "verify": "bun run verify:web",
+    "verify:web": "bun run build && bun run typecheck",
+    "lint": "bun run eslint && bun run prettier -- --check",
+    "fmt": "bun run eslint -- --fix && bun run prettier -- --write",
+    "eslint": "eslint .",
+    "prettier": "prettier-pretty-check \"**/*.{css,html,ts,js,json,md}\"",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": [
+    "capacitor",
+    "sheet",
+    "bottom-sheet",
+    "drawer",
+    "dialog",
+    "overlay",
+    "swipe",
+    "web-components",
+    "framework-agnostic"
+  ],
+  "author": "Martin Donadieu <martin@capgo.app>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cap-go/capacitor-sheets.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Cap-go/capacitor-sheets/issues"
+  },
+  "homepage": "https://capgo.app/docs/plugins/sheets/",
+  "devDependencies": {
+    "@ionic/eslint-config": "^0.4.0",
+    "@ionic/prettier-config": "^4.0.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.3.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-import": "^2.31.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.6.2",
+    "prettier-pretty-check": "^0.2.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.0.0"
+  },
+  "peerDependencies": {
+    "@angular/core": ">=17.0.0",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
+    "solid-js": ">=1.0.0",
+    "svelte": ">=4.0.0",
+    "vue": ">=3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@angular/core": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    },
+    "solid-js": {
+      "optional": true
+    },
+    "svelte": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
+  },
+  "eslintConfig": {
+    "extends": "@ionic/eslint-config/recommended"
+  },
+  "prettier": "@ionic/prettier-config"
+}
