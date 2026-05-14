@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "ng serve --host 0.0.0.0",
-    "build": "ng build"
+    "dev": "vite --host 0.0.0.0",
+    "build": "ngc -p tsconfig.app.json --noEmit && vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@angular/common": "^21.2.13",
@@ -19,8 +20,9 @@
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^21.2.11",
-    "@angular/cli": "^21.2.11",
     "@angular/compiler-cli": "^21.2.13",
-    "typescript": "~5.9.3"
+    "@analogjs/vite-plugin-angular": "^2.5.1",
+    "typescript": "~5.9.3",
+    "vite": "^8.0.13"
   }
 }
