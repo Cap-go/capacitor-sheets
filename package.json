@@ -148,6 +148,9 @@
       "optional": true
     }
   },
+  "overrides": {
+    "vite": "^8.0.13"
+  },
   "eslintConfig": {
     "extends": "@ionic/eslint-config/recommended"
   },
