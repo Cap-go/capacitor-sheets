@@ -1,0 +1,340 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  line-height: 1.35;
+  color: #151515;
+  background: #eef3f1;
+}
+
+html,
+body,
+#app,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-width: 20em;
+  background:
+    linear-gradient(135deg, rgb(54 93 168 / 0.1), transparent 28em),
+    linear-gradient(315deg, rgb(25 112 95 / 0.12), transparent 24em), #eef3f1;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.demo-app {
+  box-sizing: border-box;
+  min-height: 100dvh;
+  padding: max(1em, env(safe-area-inset-top)) clamp(1em, 3vw, 2em) calc(2em + env(safe-area-inset-bottom));
+}
+
+.demo-hero {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1em;
+  max-width: 76em;
+  margin-inline: auto;
+  padding-block: 1em 1.25em;
+}
+
+.demo-hero h1 {
+  max-width: 12em;
+  margin: 0;
+  font-size: 3.6em;
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+
+.demo-hero p {
+  max-width: 42em;
+  margin: 0.75em 0 0;
+  color: #4d5b55;
+}
+
+.demo-kicker,
+.demo-chip {
+  margin: 0;
+  font-size: 0.75em;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #365da8;
+}
+
+.demo-link,
+.demo-button,
+cap-sheet-trigger.demo-button,
+cap-sheet-trigger.demo-link {
+  display: inline-grid;
+  place-items: center;
+  min-height: 2.75em;
+  box-sizing: border-box;
+  padding-inline: 1.1em;
+  border: 0;
+  border-radius: 999em;
+  background: #151515;
+  color: #fbfffd;
+  text-decoration: none;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.demo-button--quiet,
+cap-sheet-trigger.demo-button--quiet {
+  background: #e8f0ec;
+  color: #151515;
+}
+
+.demo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16em), 1fr));
+  gap: 1em;
+  max-width: 76em;
+  margin-inline: auto;
+}
+
+.demo-card {
+  overflow: hidden;
+  border: 0.0625em solid rgb(21 21 21 / 0.08);
+  border-radius: 0.5em;
+  background: rgb(251 255 253 / 0.82);
+  box-shadow: 0 1em 3em rgb(33 24 12 / 0.08);
+}
+
+.demo-card-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 10em;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgb(255 255 255 / 0.38) 0.0625em, transparent 0.0625em),
+    linear-gradient(rgb(255 255 255 / 0.38) 0.0625em, transparent 0.0625em), #86a1a8;
+  background-size: 2.75em 2.75em;
+  color: white;
+  font-size: 1.25em;
+  font-weight: 900;
+}
+
+.demo-card:nth-child(4n + 2) .demo-card-art {
+  background-color: #8f90b8;
+}
+
+.demo-card:nth-child(4n + 3) .demo-card-art {
+  background-color: #9d7a59;
+}
+
+.demo-card:nth-child(4n + 4) .demo-card-art {
+  background-color: #769978;
+}
+
+.demo-card-art i,
+.demo-card-art b {
+  position: absolute;
+  display: block;
+  border-radius: 999em;
+  background: rgb(255 255 255 / 0.28);
+}
+
+.demo-card-art i {
+  width: 7em;
+  height: 7em;
+  inset-inline-start: -2em;
+  inset-block-start: -2em;
+}
+
+.demo-card-art b {
+  width: 9em;
+  height: 9em;
+  inset-inline-end: -3em;
+  inset-block-end: -3em;
+}
+
+.demo-card-art--depth {
+  transform-origin: center;
+}
+
+.demo-card-art--parallax {
+  --demo-parallax-progress: 0;
+  background-position:
+    calc(var(--demo-parallax-progress) * -2em) 0,
+    0 calc(var(--demo-parallax-progress) * -2em),
+    0 0;
+}
+
+.demo-card-body {
+  padding: 1em;
+}
+
+.demo-card h2 {
+  margin: 0.25em 0 0;
+  font-size: 1.1em;
+  letter-spacing: 0;
+}
+
+.demo-card p:not(.demo-chip) {
+  min-height: 3.7em;
+  margin: 0.5em 0 1em;
+  color: #4d5b55;
+}
+
+cap-sheet-content.demo-sheet-content {
+  width: min(100%, 35em);
+  padding: 0 1.25em calc(1.25em + env(safe-area-inset-bottom, 0em));
+}
+
+.demo-sheet-content cap-sheet-title {
+  display: block;
+  margin-block-start: 0.25em;
+  font-size: 1.5em;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.demo-sheet-content cap-sheet-description {
+  display: block;
+  margin-block: 0.35em 1em;
+  color: #4d5b55;
+}
+
+.demo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65em;
+}
+
+.demo-mini-list,
+.demo-page-layout {
+  display: grid;
+  gap: 0.75em;
+}
+
+.demo-mini-list span,
+.demo-row {
+  display: block;
+  margin: 0;
+  padding: 0.85em 1em;
+  border-radius: 0.5em;
+  background: #e8f0ec;
+}
+
+.demo-scroll {
+  max-height: 22em;
+  margin-block-end: 1em;
+  padding-inline-end: 0.35em;
+}
+
+.demo-field {
+  display: grid;
+  gap: 0.35em;
+  margin-block-end: 0.85em;
+  font-weight: 800;
+}
+
+.demo-field input,
+.demo-field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  border: 0.0625em solid rgb(21 21 21 / 0.16);
+  border-radius: 0.5em;
+  padding: 0.85em;
+  background: #fbfffd;
+  color: #151515;
+}
+
+.demo-toast-row,
+.demo-page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1em;
+}
+
+cap-sheet-content.demo-sheet--toast {
+  width: min(calc(100% - 2em), 28em);
+  margin-block-end: 1em;
+  border-radius: 0.75em;
+  padding-block-start: 1em;
+}
+
+cap-sheet-content.demo-sheet--detached,
+cap-sheet-content.demo-sheet--persistent {
+  width: min(calc(100% - 2em), 34em);
+  margin-block-end: 1em;
+  border-radius: 1.25em;
+}
+
+cap-sheet-content.demo-sheet--top {
+  padding-block-start: calc(1em + env(safe-area-inset-top, 0em));
+}
+
+cap-sheet-content.demo-sheet--side {
+  width: min(88vw, 24em);
+  height: 100%;
+  max-height: 100%;
+}
+
+cap-sheet-content.demo-sheet--page {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  border-radius: 0;
+  padding-block-start: calc(1em + env(safe-area-inset-top, 0em));
+}
+
+cap-sheet-content.demo-sheet--right-page {
+  width: min(100%, 32em);
+}
+
+.demo-page-head {
+  font-size: 1.15em;
+  font-weight: 900;
+}
+
+.demo-page-layout {
+  margin-block-start: 1.25em;
+}
+
+.demo-page-layout button {
+  min-height: 3em;
+  border: 0;
+  border-radius: 0.5em;
+  background: #365da8;
+  color: #fff;
+  font-weight: 800;
+}
+
+cap-sheet-content.demo-sheet--lightbox,
+cap-sheet-content.demo-sheet--card {
+  width: min(calc(100% - 2em), 30em);
+  border-radius: 0.75em;
+  padding-block-start: 1.25em;
+}
+
+.demo-lightbox-media {
+  display: grid;
+  place-items: center;
+  min-height: 14em;
+  border-radius: 0.5em;
+  background: linear-gradient(135deg, rgb(255 255 255 / 0.28), transparent), #151515;
+  color: #fff;
+  font-size: 3em;
+  font-weight: 900;
+}
+
+@media (max-width: 42em) {
+  .demo-hero {
+    display: grid;
+    align-items: start;
+  }
+
+  .demo-hero h1 {
+    font-size: 2.4em;
+  }
+}

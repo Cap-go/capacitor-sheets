@@ -25,7 +25,7 @@ export class CapSheetPortal extends HTMLElement {
         child.setAttribute('for', sheet.id);
         for (const descendant of Array.from(
           child.querySelectorAll<HTMLElement>(
-            'cap-sheet-view, cap-sheet-backdrop, cap-sheet-content, cap-sheet-title, cap-sheet-description, cap-sheet-handle, cap-auto-focus-target',
+            'cap-sheet-view, cap-sheet-backdrop, cap-sheet-content, cap-sheet-title, cap-sheet-description, cap-sheet-trigger, cap-sheet-handle, cap-auto-focus-target',
           ),
         )) {
           if (!descendant.hasAttribute('for')) descendant.setAttribute('for', sheet.id);

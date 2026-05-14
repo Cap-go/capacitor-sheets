@@ -437,7 +437,11 @@ export class SheetController {
       this.handleVisualViewportResize();
     }
     this.remeasure();
-    this.updateDomState(false);
+    this.applyOffset(
+      this.presented ? this.detentOffsetsPx[this.activeDetent] || 0 : this.detentOffsetsPx[0] || this.hiddenOffsetPx,
+      this.status,
+    );
+    this.updateDomState(this.presented);
   }
 
   /** Unregister a view, backdrop, content, or semantic part. */

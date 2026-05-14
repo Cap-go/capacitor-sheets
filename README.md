@@ -116,7 +116,7 @@ Each usecase has its own animated WebP demo. These match the public Silk-style e
 
 ## Online Playgrounds
 
-The examples can be opened directly in StackBlitz:
+Each framework example opens the same 16-usecase gallery, so StackBlitz is useful for testing the full surface instead of a single smoke-test sheet:
 
 - [React playground](https://stackblitz.com/github/Cap-go/capacitor-sheets?file=examples/react-app/src/main.tsx&startScript=stackblitz-react)
 - [Vue playground](https://stackblitz.com/github/Cap-go/capacitor-sheets?file=examples/vue-app/src/App.vue&startScript=stackblitz-vue)
@@ -249,36 +249,28 @@ Full runnable examples live in:
 - `examples/svelte-app`
 - `examples/solid-app`
 
+All five apps mount the shared usecase gallery from `examples/shared/usecase-gallery.ts`. That gallery covers Long Sheet, Sheet with Detent, Sidebar, Bottom Sheet, Sheet with Keyboard, Toast, Detached Sheet, Page from Bottom, Top Sheet, Sheet with Stacking, Sheet with Depth, Parallax Page, Page, Lightbox, Persistent Sheet with Detent, and Card.
+
 ### React
 
 ```tsx
-import { useEffect, useRef } from 'react';
 import { setupSheet } from '@capgo/capacitor-sheets/react';
+import { useEffect, useRef } from 'react';
 import '@capgo/capacitor-sheets';
+import { mountUsecaseGallery } from '../../shared/usecase-gallery';
 
-export function BookingSheet() {
-  const sheetRef = useRef<HTMLElement>(null);
+export function App() {
+  const galleryRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!sheetRef.current) return;
-    return setupSheet(sheetRef.current, {
-      detents: ['18em', '32em'],
-      contentPlacement: 'bottom',
+    if (!galleryRef.current) return;
+    return mountUsecaseGallery(galleryRef.current, {
+      framework: 'React',
+      setupSheet,
     });
   }, []);
 
-  return (
-    <cap-sheet id="booking-sheet" ref={sheetRef}>
-      <cap-sheet-trigger action="present">Open</cap-sheet-trigger>
-      <cap-sheet-view>
-        <cap-sheet-backdrop />
-        <cap-sheet-content>
-          <cap-sheet-handle />
-          <cap-sheet-title>React sheet</cap-sheet-title>
-        </cap-sheet-content>
-      </cap-sheet-view>
-    </cap-sheet>
-  );
+  return <div ref={galleryRef} />;
 }
 ```
 
@@ -289,60 +281,58 @@ export function BookingSheet() {
 import { onMounted, onUnmounted, ref } from 'vue';
 import { setupSheet } from '@capgo/capacitor-sheets/vue';
 import '@capgo/capacitor-sheets';
+import { mountUsecaseGallery } from '../../shared/usecase-gallery';
 
-const sheetRef = ref<HTMLElement | null>(null);
+const galleryRef = ref<HTMLElement | null>(null);
 let cleanup: (() => void) | undefined;
 
 onMounted(() => {
-  if (sheetRef.value) cleanup = setupSheet(sheetRef.value, { detents: ['18em', '32em'] });
+  if (galleryRef.value) {
+    cleanup = mountUsecaseGallery(galleryRef.value, {
+      framework: 'Vue',
+      setupSheet,
+    });
+  }
 });
 
 onUnmounted(() => cleanup?.());
 </script>
 
 <template>
-  <cap-sheet id="booking-sheet" ref="sheetRef">
-    <cap-sheet-trigger action="present">Open</cap-sheet-trigger>
-    <cap-sheet-view>
-      <cap-sheet-backdrop />
-      <cap-sheet-content>
-        <cap-sheet-handle />
-        <cap-sheet-title>Vue sheet</cap-sheet-title>
-      </cap-sheet-content>
-    </cap-sheet-view>
-  </cap-sheet>
+  <div ref="galleryRef"></div>
 </template>
 ```
 
 ### Angular
 
 ```ts
-import { AfterViewInit, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, ViewChild } from '@angular/core';
+import type { AfterViewInit, ElementRef, OnDestroy } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ViewChild } from '@angular/core';
 import { setupSheet } from '@capgo/capacitor-sheets/angular';
 import '@capgo/capacitor-sheets';
+import { mountUsecaseGallery } from '../../../shared/usecase-gallery';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  template: `
-    <cap-sheet id="booking-sheet" #sheet>
-      <cap-sheet-trigger action="present">Open</cap-sheet-trigger>
-      <cap-sheet-view>
-        <cap-sheet-backdrop></cap-sheet-backdrop>
-        <cap-sheet-content>
-          <cap-sheet-handle></cap-sheet-handle>
-          <cap-sheet-title>Angular sheet</cap-sheet-title>
-        </cap-sheet-content>
-      </cap-sheet-view>
-    </cap-sheet>
-  `,
+  template: `<div #gallery></div>`,
 })
-export class AppComponent implements AfterViewInit {
-  @ViewChild('sheet', { static: true }) sheet?: ElementRef<HTMLElement>;
+export class AppComponent implements AfterViewInit, OnDestroy {
+  @ViewChild('gallery', { static: true }) gallery?: ElementRef<HTMLElement>;
+  private cleanup?: () => void;
 
   ngAfterViewInit(): void {
-    if (this.sheet?.nativeElement) setupSheet(this.sheet.nativeElement, { detents: ['18em', '32em'] });
+    if (this.gallery?.nativeElement) {
+      this.cleanup = mountUsecaseGallery(this.gallery.nativeElement, {
+        framework: 'Angular',
+        setupSheet,
+      });
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.cleanup?.();
   }
 }
 ```
@@ -351,20 +341,22 @@ export class AppComponent implements AfterViewInit {
 
 ```svelte
 <script lang="ts">
-  import { sheet } from '@capgo/capacitor-sheets/svelte'
+  import { onMount } from 'svelte'
+  import { setupSheet } from '@capgo/capacitor-sheets/svelte'
   import '@capgo/capacitor-sheets'
+  import { mountUsecaseGallery } from '../../shared/usecase-gallery'
+
+  let gallery: HTMLDivElement
+
+  onMount(() =>
+    mountUsecaseGallery(gallery, {
+      framework: 'Svelte',
+      setupSheet,
+    }),
+  )
 </script>
 
-<cap-sheet id="booking-sheet" use:sheet={{ detents: ['18em', '32em'] }}>
-  <cap-sheet-trigger action="present">Open</cap-sheet-trigger>
-  <cap-sheet-view>
-    <cap-sheet-backdrop />
-    <cap-sheet-content>
-      <cap-sheet-handle />
-      <cap-sheet-title>Svelte sheet</cap-sheet-title>
-    </cap-sheet-content>
-  </cap-sheet-view>
-</cap-sheet>
+<div bind:this={gallery}></div>
 ```
 
 ### Solid
@@ -373,27 +365,20 @@ export class AppComponent implements AfterViewInit {
 import { onCleanup, onMount } from 'solid-js';
 import { setupSheet } from '@capgo/capacitor-sheets/solid';
 import '@capgo/capacitor-sheets';
+import { mountUsecaseGallery } from '../../shared/usecase-gallery';
 
-export function BookingSheet() {
-  let sheetEl!: HTMLElement;
+export function App() {
+  let galleryEl!: HTMLDivElement;
 
   onMount(() => {
-    const cleanup = setupSheet(sheetEl, { detents: ['18em', '32em'] });
+    const cleanup = mountUsecaseGallery(galleryEl, {
+      framework: 'Solid',
+      setupSheet,
+    });
     onCleanup(cleanup);
   });
 
-  return (
-    <cap-sheet id="booking-sheet" ref={sheetEl}>
-      <cap-sheet-trigger action="present">Open</cap-sheet-trigger>
-      <cap-sheet-view>
-        <cap-sheet-backdrop />
-        <cap-sheet-content>
-          <cap-sheet-handle />
-          <cap-sheet-title>Solid sheet</cap-sheet-title>
-        </cap-sheet-content>
-      </cap-sheet-view>
-    </cap-sheet>
-  );
+  return <div ref={galleryEl} />;
 }
 ```
 
