@@ -634,6 +634,7 @@ export class SheetController {
     const view = this.parts.view;
     const placement = this.options.contentPlacement || 'bottom';
     const progress = this.getProgressForOffset(offsetPx);
+    const receivesOutsideInput = progress > 0.01 && !this.hasInteractiveOutside();
 
     if (content) {
       if (placement === 'center') {
@@ -654,11 +655,11 @@ export class SheetController {
         progress *
           Number.parseFloat(getComputedStyle(backdrop).getPropertyValue('--cap-sheet-backdrop-opacity') || '0.44'),
       );
-      backdrop.style.pointerEvents = this.hasInteractiveOutside() ? 'none' : 'auto';
+      backdrop.style.pointerEvents = receivesOutsideInput ? 'auto' : 'none';
     }
 
     if (view) {
-      view.style.pointerEvents = progress > 0.01 && !this.hasInteractiveOutside() ? 'auto' : 'none';
+      view.style.pointerEvents = receivesOutsideInput ? 'auto' : 'none';
       view.dataset.presented = this.presented ? 'true' : 'false';
       view.dataset.status = status;
       view.dataset.outsideInteractive = this.hasInteractiveOutside() ? 'true' : 'false';
