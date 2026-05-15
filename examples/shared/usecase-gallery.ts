@@ -41,6 +41,7 @@ const usecases: Usecase[] = [
     summary: 'Peek, mid, and expanded resting points.',
     placement: 'bottom',
     detents: ['12em', '24em', '40em'],
+    sheetClass: 'demo-sheet--detents',
   },
   {
     slug: 'sidebar',
@@ -56,6 +57,7 @@ const usecases: Usecase[] = [
     summary: 'A standard native-feeling mobile bottom sheet.',
     placement: 'bottom',
     detents: ['18em', '32em'],
+    sheetClass: 'demo-sheet--bottom',
   },
   {
     slug: 'sheet-with-keyboard',
@@ -113,6 +115,7 @@ const usecases: Usecase[] = [
     summary: 'A second sheet stacks above the first one.',
     placement: 'bottom',
     detents: ['20em', '32em'],
+    sheetClass: 'demo-sheet--stack-parent',
     child: {
       slug: 'sheet-with-stacking-child',
       title: 'Stacked Details',
@@ -128,6 +131,7 @@ const usecases: Usecase[] = [
     summary: 'Sheet progress scales the page behind it.',
     placement: 'bottom',
     detents: ['20em', '34em'],
+    sheetClass: 'demo-sheet--depth',
     outlet: 'depth',
   },
   {
@@ -136,6 +140,7 @@ const usecases: Usecase[] = [
     summary: 'Sheet progress drives a parallax background.',
     placement: 'bottom',
     detents: ['18em', '36em'],
+    sheetClass: 'demo-sheet--parallax',
     outlet: 'parallax',
   },
   {

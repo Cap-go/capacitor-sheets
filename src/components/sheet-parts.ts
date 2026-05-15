@@ -41,7 +41,7 @@ export class CapSheetContent extends SheetPartElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-    this.tabIndex = this.tabIndex || -1;
+    if (!this.hasAttribute('tabindex')) this.tabIndex = -1;
   }
 }
 
@@ -77,7 +77,7 @@ export class CapAutoFocusTarget extends SheetPartElement {
   readonly partName = 'autoFocusTarget' as const;
 
   connectedCallback(): void {
-    this.tabIndex = this.tabIndex || -1;
+    if (!this.hasAttribute('tabindex')) this.tabIndex = -1;
     super.connectedCallback();
   }
 }
