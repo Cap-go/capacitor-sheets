@@ -189,6 +189,31 @@ cap-sheet-content.demo-sheet-content {
   padding: 0 1.25em calc(1.25em + env(safe-area-inset-bottom, 0em));
 }
 
+cap-sheet-content.demo-sheet--long {
+  height: min(100%, 42em);
+}
+
+cap-sheet-content.demo-sheet--detents {
+  height: min(100%, 40em);
+}
+
+cap-sheet-content.demo-sheet--bottom,
+cap-sheet-content.demo-sheet--stack-parent {
+  height: min(100%, 32em);
+}
+
+cap-sheet-content.demo-sheet--depth {
+  height: min(100%, 34em);
+}
+
+cap-sheet-content.demo-sheet--parallax {
+  height: min(100%, 36em);
+}
+
+cap-sheet-content.demo-sheet--form {
+  height: min(100%, 38em);
+}
+
 .demo-sheet-content cap-sheet-title {
   display: block;
   margin-block-start: 0.25em;
@@ -258,6 +283,7 @@ cap-sheet-content.demo-sheet-content {
 
 cap-sheet-content.demo-sheet--toast {
   width: min(calc(100% - 2em), 28em);
+  height: min(100%, 8em);
   margin-block-end: 1em;
   border-radius: 0.75em;
   padding-block-start: 1em;
@@ -270,14 +296,30 @@ cap-sheet-content.demo-sheet--persistent {
   border-radius: 1.25em;
 }
 
+cap-sheet-content.demo-sheet--detached {
+  height: min(100%, 30em);
+}
+
+cap-sheet-content.demo-sheet--persistent {
+  height: min(100%, 24em);
+}
+
 cap-sheet-content.demo-sheet--top {
+  height: min(100%, 14em);
   padding-block-start: calc(1em + env(safe-area-inset-top, 0em));
 }
 
+cap-sheet-content.demo-sheet--stacked {
+  height: min(100%, 28em);
+}
+
 cap-sheet-content.demo-sheet--side {
-  width: min(88vw, 24em);
   height: 100%;
   max-height: 100%;
+}
+
+cap-sheet-view[content-placement='left'] cap-sheet-content.demo-sheet--side {
+  width: min(88vw, 24em);
 }
 
 cap-sheet-content.demo-sheet--page {

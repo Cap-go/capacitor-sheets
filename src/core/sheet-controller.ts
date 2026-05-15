@@ -284,8 +284,6 @@ export class SheetController {
       velocity: 0,
       dragging: false,
     };
-
-    (event.currentTarget as HTMLElement | null)?.setPointerCapture?.(event.pointerId);
   };
 
   private readonly handlePointerMove = (event: PointerEvent): void => {
@@ -301,6 +299,7 @@ export class SheetController {
     if (!travel.dragging) {
       if (Math.abs(delta) < 6 || Math.abs(crossDelta) > Math.abs(delta) * 1.25) return;
       travel.dragging = true;
+      (event.currentTarget as HTMLElement | null)?.setPointerCapture?.(event.pointerId);
       this.setStatus('dragging');
       dispatch(this.root, 'cap-sheet-drag-start', this.getTravelEvent());
     }
@@ -324,6 +323,11 @@ export class SheetController {
   private readonly handlePointerUp = (event: PointerEvent): void => {
     const travel = this.pointerTravel;
     if (!travel || travel.id !== event.pointerId) return;
+
+    const currentTarget = event.currentTarget as HTMLElement | null;
+    if (currentTarget?.hasPointerCapture?.(event.pointerId)) {
+      currentTarget.releasePointerCapture(event.pointerId);
+    }
 
     this.pointerTravel = null;
     if (!travel.dragging) return;
@@ -584,27 +588,45 @@ export class SheetController {
       return;
     }
 
-    const track = this.activeTrack;
-    const sign = trackSign(track);
-    const axis = isVerticalTrack(track) ? 'y' : 'x';
-    const rect = content.getBoundingClientRect();
-    const size = axis === 'y' ? rect.height : rect.width;
-    this.hiddenOffsetPx = Math.max(size, 1) * sign;
-
-    const detents = normalizeDetents(this.options.detents);
-    const offsets = [this.hiddenOffsetPx];
-    for (const detent of detents) {
-      const visible = measureCssLength(detent, content, axis);
-      const offset = Math.max(Math.abs(this.hiddenOffsetPx) - visible, 0) * sign;
-      offsets.push(offset);
+    const view = this.parts.view;
+    const shouldMeasureHiddenView = Boolean(view?.hidden);
+    const previousVisibility = view?.style.visibility || '';
+    const previousPointerEvents = view?.style.pointerEvents || '';
+    if (view && shouldMeasureHiddenView) {
+      view.hidden = false;
+      view.style.visibility = 'hidden';
+      view.style.pointerEvents = 'none';
     }
-    offsets.push(0);
-    this.detentOffsetsPx = offsets;
-    this.activeDetent = clamp(this.activeDetent, this.options.swipeDismissal === false ? 1 : 0, offsets.length - 1);
-    dispatch(this.root, 'cap-sheet-travel-range-change', {
-      offsets: offsets.map((offset) => toEm(content, offset)),
-      count: offsets.length,
-    });
+
+    try {
+      const track = this.activeTrack;
+      const sign = trackSign(track);
+      const axis = isVerticalTrack(track) ? 'y' : 'x';
+      const rect = content.getBoundingClientRect();
+      const size = axis === 'y' ? rect.height : rect.width;
+      this.hiddenOffsetPx = Math.max(size, 1) * sign;
+
+      const detents = normalizeDetents(this.options.detents);
+      const offsets = [this.hiddenOffsetPx];
+      for (const detent of detents) {
+        const visible = measureCssLength(detent, content, axis);
+        const offset = Math.max(Math.abs(this.hiddenOffsetPx) - visible, 0) * sign;
+        offsets.push(offset);
+      }
+      offsets.push(0);
+      this.detentOffsetsPx = offsets;
+      this.activeDetent = clamp(this.activeDetent, this.options.swipeDismissal === false ? 1 : 0, offsets.length - 1);
+      dispatch(this.root, 'cap-sheet-travel-range-change', {
+        offsets: offsets.map((offset) => toEm(content, offset)),
+        count: offsets.length,
+      });
+    } finally {
+      if (view && shouldMeasureHiddenView) {
+        view.hidden = true;
+        view.style.visibility = previousVisibility;
+        view.style.pointerEvents = previousPointerEvents;
+      }
+    }
   }
 
   /** Read current normalized travel details. */
@@ -969,12 +991,7 @@ export class SheetController {
   private applyInert(): void {
     if (this.options.inertOutside === false || !this.parts.view) return;
     const body = this.root.ownerDocument.body;
-    const allowed = new Set<HTMLElement>([
-      this.parts.view,
-      this.root,
-      ...this.parts.islands,
-      ...this.parts.externalOverlays,
-    ]);
+    const allowed = new Set<HTMLElement>([this.parts.view, ...this.parts.islands, ...this.parts.externalOverlays]);
 
     this.clearInert();
     for (const child of Array.from(body.children)) {

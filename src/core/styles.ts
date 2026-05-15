@@ -52,6 +52,10 @@ cap-sheet-view {
   padding-inline-end: var(--cap-sheet-applied-safe-area-right, 0em);
 }
 
+cap-sheet-view[hidden] {
+  display: none !important;
+}
+
 cap-sheet-view[content-placement="top"] {
   align-items: start;
   justify-items: center;

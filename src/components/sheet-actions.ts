@@ -34,7 +34,7 @@ export class CapSheetTrigger extends HTMLElement {
   connectedCallback(): void {
     injectCapSheetStyles(this.ownerDocument);
     this.role ||= 'button';
-    this.tabIndex = this.tabIndex || 0;
+    if (!this.hasAttribute('tabindex')) this.tabIndex = 0;
     this.addEventListener('click', this.handleClick);
     this.addEventListener('keydown', this.handleKeyDown);
   }
@@ -60,7 +60,7 @@ export class CapSheetHandle extends HTMLElement {
   connectedCallback(): void {
     injectCapSheetStyles(this.ownerDocument);
     this.role ||= 'button';
-    this.tabIndex = this.tabIndex || 0;
+    if (!this.hasAttribute('tabindex')) this.tabIndex = 0;
     this.setAttribute('aria-label', this.getAttribute('aria-label') || 'Move sheet');
     this.addEventListener('click', this.handleClick);
     this.addEventListener('keydown', this.handleKeyDown);
