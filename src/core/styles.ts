@@ -84,7 +84,7 @@ cap-sheet-backdrop {
   display: block;
   background: var(--cap-sheet-backdrop-color);
   opacity: 0;
-  pointer-events: auto;
+  pointer-events: none;
   touch-action: none;
   will-change: opacity;
 }
