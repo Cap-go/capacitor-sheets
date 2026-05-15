@@ -27,5 +27,8 @@
   },
   "overrides": {
     "vite": "^8.0.13"
+  },
+  "optionalDependencies": {
+    "@rolldown/binding-wasm32-wasi": "1.0.1"
   }
 }

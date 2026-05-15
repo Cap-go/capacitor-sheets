@@ -144,11 +144,17 @@ export function getSheetFromElement(element: Element): CapSheet | null {
   const explicitTarget = element.getAttribute('for');
   if (explicitTarget) {
     const found = element.ownerDocument.getElementById(explicitTarget);
-    return found instanceof CapSheet ? found : null;
+    return isCapSheetElement(found) ? found : null;
   }
 
   const nearest = element.closest('cap-sheet');
-  return nearest instanceof CapSheet ? nearest : null;
+  return isCapSheetElement(nearest) ? nearest : null;
+}
+
+function isCapSheetElement(element: Element | null): element is CapSheet {
+  if (!element || element.localName !== 'cap-sheet') return false;
+  const candidate = element as Partial<CapSheet>;
+  return typeof candidate.present === 'function' && typeof candidate.dismiss === 'function';
 }
 
 export function applySheetOptions(element: HTMLElement, options: Partial<SheetOptions>): void {

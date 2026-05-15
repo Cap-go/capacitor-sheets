@@ -654,7 +654,7 @@ export class SheetController {
         progress *
           Number.parseFloat(getComputedStyle(backdrop).getPropertyValue('--cap-sheet-backdrop-opacity') || '0.44'),
       );
-      backdrop.style.pointerEvents = this.hasInteractiveOutside() ? 'none' : 'auto';
+      backdrop.style.pointerEvents = progress > 0.01 && !this.hasInteractiveOutside() ? 'auto' : 'none';
     }
 
     if (view) {
