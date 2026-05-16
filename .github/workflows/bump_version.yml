@@ -48,7 +48,6 @@ jobs:
         run: bunx standard-version@latest --prerelease alpha --skip.changelog
       - name: Push to origin
         run: |
-          CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          CURRENT_BRANCH="${GITHUB_REF_NAME}"
           remote_repo="https://${GITHUB_ACTOR}:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git"
-          git pull $remote_repo $CURRENT_BRANCH
           git push $remote_repo HEAD:$CURRENT_BRANCH --follow-tags --tags
