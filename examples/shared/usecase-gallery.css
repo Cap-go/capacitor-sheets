@@ -245,6 +245,10 @@ cap-sheet-content.demo-sheet-content {
   padding: 0 clamp(1.25rem, 4vw, 2rem) calc(1.5rem + env(safe-area-inset-bottom, 0em));
 }
 
+cap-sheet-content.demo-sheet-content:focus {
+  outline: none;
+}
+
 cap-sheet-content.demo-sheet--long {
   height: min(100%, 42em);
 }
@@ -328,6 +332,11 @@ cap-sheet-content.demo-sheet--form {
   padding-inline-end: 0.35em;
 }
 
+.demo-scroll cap-scroll-content {
+  display: grid;
+  gap: 0.75rem;
+}
+
 .demo-field {
   display: grid;
   gap: 0.35em;
@@ -354,12 +363,30 @@ cap-sheet-content.demo-sheet--form {
   gap: 1em;
 }
 
+.demo-toast-copy {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.demo-toast-copy strong {
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.demo-toast-copy p {
+  margin: 0;
+  color: var(--demo-muted);
+  line-height: 1.35;
+}
+
 cap-sheet-content.demo-sheet--toast {
-  width: min(calc(100% - 2em), 28em);
-  height: min(100%, 8em);
-  margin-block-end: 1em;
+  width: min(calc(100% - 2em), 30em);
+  height: auto;
+  margin-block-end: calc(1em + env(safe-area-inset-bottom, 0em));
   border-radius: var(--demo-radius-md);
-  padding-block-start: 1em;
+  padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0em));
+  overflow: visible;
 }
 
 cap-sheet-content.demo-sheet--detached,

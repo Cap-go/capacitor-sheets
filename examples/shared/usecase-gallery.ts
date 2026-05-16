@@ -19,6 +19,7 @@ interface Usecase {
   summary: string;
   placement: SheetPlacement;
   detents?: string[];
+  handle?: boolean;
   sheetClass?: string;
   backdrop?: boolean;
   options?: SheetOptions;
@@ -75,6 +76,7 @@ const usecases: Usecase[] = [
     summary: 'Non-blocking notification built from a sheet.',
     placement: 'bottom',
     detents: ['8em'],
+    handle: false,
     sheetClass: 'demo-sheet--toast',
     backdrop: false,
     options: {
@@ -277,7 +279,7 @@ function renderSheet(usecase: Usecase, index: number): string {
 function renderSingleSheet(usecase: Usecase, index: number, stackId?: string, child = false): string {
   const id = child ? `${getSheetId(usecase, index)}-child` : getSheetId(usecase, index);
   const detents = usecase.detents?.join(' ') || '';
-  const hasHandle = usecase.placement !== 'center';
+  const hasHandle = usecase.handle !== false && usecase.placement !== 'center';
   const stackAttr = stackId ? ` stack="${stackId}"` : '';
   const detentAttr = detents ? ` detents="${escapeHtml(detents)}"` : '';
   const backdrop = usecase.backdrop === false ? '' : '<cap-sheet-backdrop></cap-sheet-backdrop>';
@@ -355,10 +357,12 @@ function renderSheetBody(usecase: Usecase, index: number, child: boolean): strin
     case 'toast':
       return `
         <div class="demo-toast-row">
-          <strong>Update ready</strong>
+          <div class="demo-toast-copy">
+            <strong>Update ready</strong>
+            <p>Outside content remains interactive.</p>
+          </div>
           ${close}
         </div>
-        <p>Outside content remains interactive.</p>
       `;
     case 'page-from-bottom':
     case 'page':
