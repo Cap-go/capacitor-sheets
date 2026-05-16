@@ -107,9 +107,10 @@ const usecases: Usecase[] = [
   {
     slug: 'top-sheet',
     title: 'Top Sheet',
-    summary: 'Travel and dismiss from the top edge.',
+    summary: 'A top-anchored feature panel with a clear close control.',
     placement: 'top',
-    detents: ['14em'],
+    detents: ['42em'],
+    handle: false,
     sheetClass: 'demo-sheet--top',
   },
   {
@@ -362,6 +363,22 @@ function renderSheetBody(usecase: Usecase, index: number, child: boolean): strin
             <p>Outside content remains interactive.</p>
           </div>
           ${close}
+        </div>
+      `;
+    case 'top-sheet':
+      return `
+        <div class="demo-top-sheet">
+          <div class="demo-top-head">
+            <cap-sheet-trigger class="demo-icon-button" action="dismiss" aria-label="Close top sheet">&#215;</cap-sheet-trigger>
+          </div>
+          <div class="demo-top-copy">
+            <cap-sheet-title>Terrace Loft is Available</cap-sheet-title>
+            <div class="demo-top-visual" role="img" aria-label="Modern terrace home with blue sky"></div>
+            <cap-sheet-description>
+              A bright two-bedroom stay with skyline views, warm interiors, and a private garden terrace.
+            </cap-sheet-description>
+            <cap-sheet-trigger class="demo-button demo-top-primary" action="dismiss">Book it now</cap-sheet-trigger>
+          </div>
         </div>
       `;
     case 'page-from-bottom':
