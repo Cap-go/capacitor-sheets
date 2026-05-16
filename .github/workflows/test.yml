@@ -5,7 +5,7 @@ on:
     branches:
       - renovate/**
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_call: # Allow this workflow to be called by other workflows
 
 jobs:
@@ -33,4 +33,3 @@ jobs:
       - name: Verify
         id: verify_code
         run: bun run verify:web
-
