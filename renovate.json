@@ -15,9 +15,14 @@
       "automerge": true
     },
     {
-      "matchPackageNames": ["eslint"],
+      "matchPackageNames": ["eslint", "@eslint/js"],
       "matchManagers": ["npm"],
       "enabled": false
+    },
+    {
+      "matchPackageNames": ["typescript"],
+      "matchManagers": ["npm"],
+      "allowedVersions": "<6.0.0"
     },
     {
       "matchManagers": ["swift-pm"],
