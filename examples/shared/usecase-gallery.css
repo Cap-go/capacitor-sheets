@@ -64,7 +64,7 @@ cap-sheet-trigger.demo-link {
   overflow: hidden;
   background: var(--demo-page-bg);
   transform-origin: top center;
-  will-change: transform, filter, border-radius, box-shadow;
+  will-change: transform;
 }
 
 .demo-hero {
