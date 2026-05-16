@@ -136,9 +136,10 @@ const usecases: Usecase[] = [
     title: 'Sheet with Depth',
     summary: 'Sheet progress scales the page behind it.',
     placement: 'bottom',
-    detents: ['20em', '34em'],
+    detents: ['28em', '46em'],
     sheetClass: 'demo-sheet--depth',
     outlet: 'depth',
+    options: { defaultActiveDetent: 2 },
   },
   {
     slug: 'parallax-page',
@@ -167,12 +168,13 @@ const usecases: Usecase[] = [
   {
     slug: 'persistent-sheet-with-detent',
     title: 'Persistent Sheet with Detent',
-    summary: 'Background remains interactive while open.',
+    summary: 'A mini player stays available while the page remains interactive.',
     placement: 'bottom',
-    detents: ['10em', '24em'],
+    detents: ['4.75em', '100dvh'],
+    handle: false,
     sheetClass: 'demo-sheet--persistent',
     options: {
-      defaultActiveDetent: 2,
+      defaultActiveDetent: 1,
       inertOutside: false,
       closeOnOutsideClick: false,
       focusTrap: false,
@@ -182,7 +184,7 @@ const usecases: Usecase[] = [
   {
     slug: 'card',
     title: 'Card',
-    summary: 'Compact centered surface for decisions.',
+    summary: 'A compact event card with one clear action.',
     placement: 'center',
     sheetClass: 'demo-sheet--card',
   },
@@ -203,8 +205,12 @@ export function mountUsecaseGallery(
     Object.assign(outlet, {
       travelAnimation: {
         transform: ({ progress }: { progress: number }) =>
-          `scale(${1 - progress * 0.07}) translateY(${-progress * 0.75}em)`,
-        filter: ({ progress }: { progress: number }) => `saturate(${1 - progress * 0.18})`,
+          `translate3d(0, ${progress * 0.75}rem, 0) scale(${1 - progress * 0.09})`,
+        filter: ({ progress }: { progress: number }) =>
+          `saturate(${1 - progress * 0.18}) brightness(${1 - progress * 0.05})`,
+        'border-radius': ({ progress }: { progress: number }) => `${progress * 1.5}rem`,
+        'box-shadow': ({ progress }: { progress: number }) =>
+          progress > 0.01 ? `0 ${progress * 1.25}rem ${progress * 3.5}rem rgb(20 23 22 / 0.2)` : 'none',
       },
     });
   }
@@ -224,33 +230,40 @@ export function mountUsecaseGallery(
 }
 
 function renderGallery(framework: FrameworkName): string {
+  const depthUsecaseIndex = usecases.findIndex((usecase) => usecase.slug === 'sheet-with-depth');
+  const depthUsecase = depthUsecaseIndex >= 0 ? usecases[depthUsecaseIndex] : undefined;
+  const depthOutletFor = depthUsecase ? ` for="${getSheetId(depthUsecase, depthUsecaseIndex)}"` : '';
+
   return `
-    <main class="demo-app">
-      <header class="demo-hero">
-        <div>
-          <p class="demo-kicker">${framework} playground</p>
-          <h1>Capgo Sheets usecases</h1>
-          <p>Open every sheet pattern from the real preview viewport. No fake phone frame, no clipped overlay.</p>
-        </div>
-        <a class="demo-link" href="https://github.com/Cap-go/capacitor-sheets" target="_blank" rel="noreferrer">GitHub</a>
-      </header>
+    ${usecases.map((usecase, index) => renderSheet(usecase, index)).join('')}
 
-      <section class="demo-grid" aria-label="Sheet usecases">
-        ${usecases.map((usecase, index) => renderCard(usecase, index)).join('')}
-      </section>
+    <cap-sheet-outlet${depthOutletFor} class="demo-depth-stage" data-demo-outlet="depth">
+      <main class="demo-app">
+        <header class="demo-hero">
+          <div>
+            <p class="demo-kicker">${framework} playground</p>
+            <h1>Capgo Sheets usecases</h1>
+            <p>Open every sheet pattern from the real preview viewport. No fake phone frame, no clipped overlay.</p>
+          </div>
+          <a class="demo-link" href="https://github.com/Cap-go/capacitor-sheets" target="_blank" rel="noreferrer">GitHub</a>
+        </header>
 
-      ${usecases.map((usecase, index) => renderSheet(usecase, index)).join('')}
-    </main>
+        <section class="demo-grid" aria-label="Sheet usecases">
+          ${usecases.map((usecase, index) => renderCard(usecase, index)).join('')}
+        </section>
+      </main>
+    </cap-sheet-outlet>
   `;
 }
 
 function renderCard(usecase: Usecase, index: number): string {
   const id = getSheetId(usecase, index);
-  const outlet = usecase.outlet
-    ? `<cap-sheet-outlet for="${id}" class="demo-card-art demo-card-art--${usecase.outlet}" data-demo-outlet="${usecase.outlet}">
+  const outlet =
+    usecase.outlet === 'parallax'
+      ? `<cap-sheet-outlet for="${id}" class="demo-card-art demo-card-art--${usecase.outlet}" data-demo-outlet="${usecase.outlet}">
         ${renderArt(usecase)}
       </cap-sheet-outlet>`
-    : `<div class="demo-card-art">${renderArt(usecase)}</div>`;
+      : `<div class="demo-card-art">${renderArt(usecase)}</div>`;
 
   return `
     <article class="demo-card">
@@ -381,6 +394,36 @@ function renderSheetBody(usecase: Usecase, index: number, child: boolean): strin
           </div>
         </div>
       `;
+    case 'sheet-with-depth':
+      return `
+        <div class="demo-depth-profile">
+          <div class="demo-depth-cover" role="img" aria-label="Mountain lake at sunrise"></div>
+          <div class="demo-depth-avatar" aria-hidden="true"></div>
+          <cap-sheet-title>Maya Chen</cap-sheet-title>
+          <cap-sheet-description>
+            Product designer, weekend climber, and host of quiet cabins across the alpine coast.
+          </cap-sheet-description>
+          <div class="demo-depth-stats" aria-label="Profile stats">
+            <span><strong>42</strong><small>stays</small></span>
+            <span><strong>4.9</strong><small>rating</small></span>
+            <span><strong>18k</strong><small>views</small></span>
+          </div>
+          <div class="demo-actions demo-actions--compact">
+            <cap-sheet-trigger class="demo-button" action="dismiss">Follow</cap-sheet-trigger>
+            ${close}
+          </div>
+          <div class="demo-depth-list">
+            <article>
+              <span>Latest guide</span>
+              <strong>Three ridge walks above Lake Annecy</strong>
+            </article>
+            <article>
+              <span>Open weekend</span>
+              <strong>Cabin No. 7 has two nights free</strong>
+            </article>
+          </div>
+        </div>
+      `;
     case 'page-from-bottom':
     case 'page':
       return `
@@ -420,22 +463,44 @@ function renderSheetBody(usecase: Usecase, index: number, child: boolean): strin
       `;
     case 'card':
       return `
-        ${title}
-        ${description}
-        <div class="demo-actions demo-actions--compact">
-          <cap-sheet-trigger class="demo-button" action="dismiss">Accept</cap-sheet-trigger>
-          ${close}
+        <div class="demo-event-card">
+          <cap-sheet-trigger class="demo-icon-button demo-event-card-close" action="dismiss" aria-label="Close card">&#215;</cap-sheet-trigger>
+          <div class="demo-event-art" role="img" aria-label="Paint brushes on a workshop table"></div>
+          <div class="demo-event-copy">
+            <cap-sheet-title>Paint and Sip</cap-sheet-title>
+            <cap-sheet-description>
+              Join a relaxed studio night with color, music, and a glass of something bright.
+            </cap-sheet-description>
+            <cap-sheet-trigger class="demo-button demo-event-primary" action="dismiss">Reserve spot</cap-sheet-trigger>
+          </div>
         </div>
       `;
     case 'persistent-sheet-with-detent':
       return `
-        ${title}
-        ${description}
-        <p class="demo-row">Tap cards behind this sheet while it is open.</p>
-        <div class="demo-actions demo-actions--compact">
-          <cap-sheet-trigger class="demo-button demo-button--quiet" action="step" detent="1">Compact</cap-sheet-trigger>
-          <cap-sheet-trigger class="demo-button demo-button--quiet" action="step" detent="2">Expanded</cap-sheet-trigger>
-          ${close}
+        <div class="demo-player">
+          <div class="demo-player-mini">
+            <cap-sheet-trigger class="demo-player-mini-main" action="step" detent="2" aria-label="Expand player">
+              <span class="demo-player-mini-art" aria-hidden="true"></span>
+              <span>
+                <strong>Barcelona Dreams</strong>
+                <small>Eira Voss</small>
+              </span>
+            </cap-sheet-trigger>
+            <cap-sheet-trigger class="demo-icon-button" action="dismiss" aria-label="Close player">&#215;</cap-sheet-trigger>
+          </div>
+          <div class="demo-player-expanded">
+            <div class="demo-player-art" role="img" aria-label="Barcelona Dreams album cover"></div>
+            <div class="demo-player-copy">
+              <cap-sheet-title>Barcelona Dreams</cap-sheet-title>
+              <cap-sheet-description>Eira Voss</cap-sheet-description>
+            </div>
+            <input class="demo-player-range" type="range" min="0" max="1000" value="700" aria-label="Track progress" />
+            <div class="demo-player-controls" aria-label="Playback controls">
+              <button type="button" aria-label="Previous track">Back</button>
+              <button type="button" aria-label="Play track">Play</button>
+              <button type="button" aria-label="Next track">Next</button>
+            </div>
+          </div>
         </div>
       `;
     default:
