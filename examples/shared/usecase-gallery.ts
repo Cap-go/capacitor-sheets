@@ -136,9 +136,10 @@ const usecases: Usecase[] = [
     title: 'Sheet with Depth',
     summary: 'Sheet progress scales the page behind it.',
     placement: 'bottom',
-    detents: ['20em', '34em'],
+    detents: ['28em', '46em'],
     sheetClass: 'demo-sheet--depth',
     outlet: 'depth',
+    options: { defaultActiveDetent: 2 },
   },
   {
     slug: 'parallax-page',
@@ -203,8 +204,12 @@ export function mountUsecaseGallery(
     Object.assign(outlet, {
       travelAnimation: {
         transform: ({ progress }: { progress: number }) =>
-          `scale(${1 - progress * 0.07}) translateY(${-progress * 0.75}em)`,
-        filter: ({ progress }: { progress: number }) => `saturate(${1 - progress * 0.18})`,
+          `translate3d(0, ${progress * 0.75}rem, 0) scale(${1 - progress * 0.09})`,
+        filter: ({ progress }: { progress: number }) =>
+          `saturate(${1 - progress * 0.18}) brightness(${1 - progress * 0.05})`,
+        'border-radius': ({ progress }: { progress: number }) => `${progress * 1.5}rem`,
+        'box-shadow': ({ progress }: { progress: number }) =>
+          progress > 0.01 ? `0 ${progress * 1.25}rem ${progress * 3.5}rem rgb(20 23 22 / 0.2)` : 'none',
       },
     });
   }
@@ -224,33 +229,40 @@ export function mountUsecaseGallery(
 }
 
 function renderGallery(framework: FrameworkName): string {
+  const depthUsecaseIndex = usecases.findIndex((usecase) => usecase.slug === 'sheet-with-depth');
+  const depthUsecase = depthUsecaseIndex >= 0 ? usecases[depthUsecaseIndex] : undefined;
+  const depthOutletFor = depthUsecase ? ` for="${getSheetId(depthUsecase, depthUsecaseIndex)}"` : '';
+
   return `
-    <main class="demo-app">
-      <header class="demo-hero">
-        <div>
-          <p class="demo-kicker">${framework} playground</p>
-          <h1>Capgo Sheets usecases</h1>
-          <p>Open every sheet pattern from the real preview viewport. No fake phone frame, no clipped overlay.</p>
-        </div>
-        <a class="demo-link" href="https://github.com/Cap-go/capacitor-sheets" target="_blank" rel="noreferrer">GitHub</a>
-      </header>
+    ${usecases.map((usecase, index) => renderSheet(usecase, index)).join('')}
 
-      <section class="demo-grid" aria-label="Sheet usecases">
-        ${usecases.map((usecase, index) => renderCard(usecase, index)).join('')}
-      </section>
+    <cap-sheet-outlet${depthOutletFor} class="demo-depth-stage" data-demo-outlet="depth">
+      <main class="demo-app">
+        <header class="demo-hero">
+          <div>
+            <p class="demo-kicker">${framework} playground</p>
+            <h1>Capgo Sheets usecases</h1>
+            <p>Open every sheet pattern from the real preview viewport. No fake phone frame, no clipped overlay.</p>
+          </div>
+          <a class="demo-link" href="https://github.com/Cap-go/capacitor-sheets" target="_blank" rel="noreferrer">GitHub</a>
+        </header>
 
-      ${usecases.map((usecase, index) => renderSheet(usecase, index)).join('')}
-    </main>
+        <section class="demo-grid" aria-label="Sheet usecases">
+          ${usecases.map((usecase, index) => renderCard(usecase, index)).join('')}
+        </section>
+      </main>
+    </cap-sheet-outlet>
   `;
 }
 
 function renderCard(usecase: Usecase, index: number): string {
   const id = getSheetId(usecase, index);
-  const outlet = usecase.outlet
-    ? `<cap-sheet-outlet for="${id}" class="demo-card-art demo-card-art--${usecase.outlet}" data-demo-outlet="${usecase.outlet}">
+  const outlet =
+    usecase.outlet === 'parallax'
+      ? `<cap-sheet-outlet for="${id}" class="demo-card-art demo-card-art--${usecase.outlet}" data-demo-outlet="${usecase.outlet}">
         ${renderArt(usecase)}
       </cap-sheet-outlet>`
-    : `<div class="demo-card-art">${renderArt(usecase)}</div>`;
+      : `<div class="demo-card-art">${renderArt(usecase)}</div>`;
 
   return `
     <article class="demo-card">
@@ -378,6 +390,36 @@ function renderSheetBody(usecase: Usecase, index: number, child: boolean): strin
               A bright two-bedroom stay with skyline views, warm interiors, and a private garden terrace.
             </cap-sheet-description>
             <cap-sheet-trigger class="demo-button demo-top-primary" action="dismiss">Book it now</cap-sheet-trigger>
+          </div>
+        </div>
+      `;
+    case 'sheet-with-depth':
+      return `
+        <div class="demo-depth-profile">
+          <div class="demo-depth-cover" role="img" aria-label="Mountain lake at sunrise"></div>
+          <div class="demo-depth-avatar" aria-hidden="true"></div>
+          <cap-sheet-title>Maya Chen</cap-sheet-title>
+          <cap-sheet-description>
+            Product designer, weekend climber, and host of quiet cabins across the alpine coast.
+          </cap-sheet-description>
+          <div class="demo-depth-stats" aria-label="Profile stats">
+            <span><strong>42</strong><small>stays</small></span>
+            <span><strong>4.9</strong><small>rating</small></span>
+            <span><strong>18k</strong><small>views</small></span>
+          </div>
+          <div class="demo-actions demo-actions--compact">
+            <cap-sheet-trigger class="demo-button" action="dismiss">Follow</cap-sheet-trigger>
+            ${close}
+          </div>
+          <div class="demo-depth-list">
+            <article>
+              <span>Latest guide</span>
+              <strong>Three ridge walks above Lake Annecy</strong>
+            </article>
+            <article>
+              <span>Open weekend</span>
+              <strong>Cabin No. 7 has two nights free</strong>
+            </article>
           </div>
         </div>
       `;
