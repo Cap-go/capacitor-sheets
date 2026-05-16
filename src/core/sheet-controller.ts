@@ -996,13 +996,13 @@ export class SheetController {
     this.clearInert();
     for (const child of Array.from(body.children)) {
       if (!(child instanceof HTMLElement)) continue;
+      this.inertedElements.set(child, { inert: child.inert, ariaHidden: child.getAttribute('aria-hidden') });
       const isAllowed = Array.from(allowed).some((element) => child === element || child.contains(element));
       if (isAllowed) {
         child.inert = false;
         child.removeAttribute('aria-hidden');
         continue;
       }
-      this.inertedElements.set(child, { inert: child.inert, ariaHidden: child.getAttribute('aria-hidden') });
       child.inert = true;
       child.setAttribute('aria-hidden', 'true');
     }
