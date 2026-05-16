@@ -136,7 +136,7 @@ interface CapSheetsIntrinsicElements {
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
-    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     interface IntrinsicElements extends CapSheetsIntrinsicElements {}
   }
 }
@@ -144,7 +144,7 @@ declare global {
 declare module 'react' {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
-    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     interface IntrinsicElements extends CapSheetsIntrinsicElements {}
   }
 }
@@ -152,7 +152,7 @@ declare module 'react' {
 declare module 'react/jsx-runtime' {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
-    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     interface IntrinsicElements extends CapSheetsIntrinsicElements {}
   }
 }
