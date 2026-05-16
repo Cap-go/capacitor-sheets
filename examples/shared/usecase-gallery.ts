@@ -42,6 +42,7 @@ const usecases: Usecase[] = [
     placement: 'bottom',
     detents: ['12em', '24em', '40em'],
     sheetClass: 'demo-sheet--detents',
+    options: { defaultActiveDetent: 2 },
   },
   {
     slug: 'sidebar',
@@ -116,6 +117,7 @@ const usecases: Usecase[] = [
     placement: 'bottom',
     detents: ['20em', '32em'],
     sheetClass: 'demo-sheet--stack-parent',
+    options: { defaultActiveDetent: 2 },
     child: {
       slug: 'sheet-with-stacking-child',
       title: 'Stacked Details',
@@ -123,6 +125,7 @@ const usecases: Usecase[] = [
       placement: 'bottom',
       detents: ['18em', '28em'],
       sheetClass: 'demo-sheet--stacked',
+      options: { defaultActiveDetent: 2 },
     },
   },
   {
@@ -166,6 +169,7 @@ const usecases: Usecase[] = [
     detents: ['10em', '24em'],
     sheetClass: 'demo-sheet--persistent',
     options: {
+      defaultActiveDetent: 2,
       inertOutside: false,
       closeOnOutsideClick: false,
       focusTrap: false,
@@ -327,7 +331,7 @@ function renderSheetBody(usecase: Usecase, index: number, child: boolean): strin
       return `
         ${title}
         ${description}
-        <div class="demo-actions">
+        <div class="demo-actions demo-actions--compact">
           <cap-sheet-trigger class="demo-button demo-button--quiet" action="step" detent="1">Peek</cap-sheet-trigger>
           <cap-sheet-trigger class="demo-button demo-button--quiet" action="step" detent="2">Mid</cap-sheet-trigger>
           <cap-sheet-trigger class="demo-button demo-button--quiet" action="step" detent="3">Full</cap-sheet-trigger>
@@ -397,7 +401,7 @@ function renderSheetBody(usecase: Usecase, index: number, child: boolean): strin
       return `
         ${title}
         ${description}
-        <div class="demo-actions">
+        <div class="demo-actions demo-actions--compact">
           <cap-sheet-trigger class="demo-button" action="dismiss">Accept</cap-sheet-trigger>
           ${close}
         </div>
@@ -407,7 +411,7 @@ function renderSheetBody(usecase: Usecase, index: number, child: boolean): strin
         ${title}
         ${description}
         <p class="demo-row">Tap cards behind this sheet while it is open.</p>
-        <div class="demo-actions">
+        <div class="demo-actions demo-actions--compact">
           <cap-sheet-trigger class="demo-button demo-button--quiet" action="step" detent="1">Compact</cap-sheet-trigger>
           <cap-sheet-trigger class="demo-button demo-button--quiet" action="step" detent="2">Expanded</cap-sheet-trigger>
           ${close}

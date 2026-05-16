@@ -1,4 +1,4 @@
-import { SheetController } from '../core/sheet-controller';
+import { readOptionsFromElement, SheetController } from '../core/sheet-controller';
 import { injectCapSheetStyles } from '../core/styles';
 import type { SheetAnimationSettings, SheetOptions } from '../core/types';
 import { parseBoolean } from '../core/utils';
@@ -47,9 +47,9 @@ export class CapSheet extends HTMLElement {
     this.controller.disconnect();
   }
 
-  attributeChangedCallback(): void {
+  attributeChangedCallback(name: string): void {
     if (this.syncingAttribute) return;
-    this.controller.configure({});
+    this.controller.configure(readChangedOptionsFromElement(this, name));
     if (this.isConnected) {
       if (this.hasAttribute('presented') && !this.controller.presented) {
         void this.present({ source: 'programmatic' });
@@ -155,6 +155,39 @@ function isCapSheetElement(element: Element | null): element is CapSheet {
   if (element?.localName !== 'cap-sheet') return false;
   const candidate = element as Partial<CapSheet>;
   return typeof candidate.present === 'function' && typeof candidate.dismiss === 'function';
+}
+
+function readChangedOptionsFromElement(element: HTMLElement, name: string): Partial<SheetOptions> {
+  const options = readOptionsFromElement(element);
+  const keysByAttribute: Record<string, (keyof SheetOptions)[]> = {
+    'active-detent': ['activeDetent'],
+    'close-on-escape': ['closeOnEscape'],
+    'close-on-outside-click': ['closeOnOutsideClick'],
+    'content-placement': ['contentPlacement', 'tracks'],
+    'default-active-detent': ['defaultActiveDetent'],
+    'default-presented': ['defaultPresented'],
+    detents: ['detents'],
+    'focus-trap': ['focusTrap'],
+    'inert-outside': ['inertOutside'],
+    'native-edge-swipe-prevention': ['nativeEdgeSwipePrevention'],
+    'native-focus-scroll-prevention': ['nativeFocusScrollPrevention'],
+    presented: ['presented'],
+    'restore-focus': ['restoreFocus'],
+    'safe-area': ['safeArea'],
+    'sheet-role': ['sheetRole'],
+    stack: ['stack'],
+    swipe: ['swipe'],
+    'swipe-dismissal': ['swipeDismissal'],
+    'swipe-overshoot': ['swipeOvershoot'],
+    'swipe-trap': ['swipeTrap'],
+    'theme-color-dimming': ['themeColorDimming'],
+    tracks: ['tracks'],
+  };
+  const changed: Partial<SheetOptions> = {};
+  for (const key of keysByAttribute[name] || []) {
+    changed[key] = options[key] as never;
+  }
+  return changed;
 }
 
 export function applySheetOptions(element: HTMLElement, options: Partial<SheetOptions>): void {
