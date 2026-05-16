@@ -45,6 +45,7 @@ textarea {
 button,
 .demo-link,
 .demo-button,
+cap-sheet-trigger.demo-icon-button,
 cap-sheet-trigger.demo-button,
 cap-sheet-trigger.demo-link {
   touch-action: manipulation;
@@ -92,6 +93,7 @@ cap-sheet-trigger.demo-link {
 
 .demo-link,
 .demo-button,
+cap-sheet-trigger.demo-icon-button,
 cap-sheet-trigger.demo-button,
 cap-sheet-trigger.demo-link {
   display: inline-flex;
@@ -126,6 +128,7 @@ cap-sheet-trigger.demo-link:hover {
 
 .demo-link:focus-visible,
 .demo-button:focus-visible,
+cap-sheet-trigger.demo-icon-button:focus-visible,
 cap-sheet-trigger.demo-button:focus-visible,
 cap-sheet-trigger.demo-link:focus-visible,
 button:focus-visible,
@@ -144,6 +147,22 @@ cap-sheet-trigger.demo-button--quiet {
 
 .demo-button--quiet:hover,
 cap-sheet-trigger.demo-button--quiet:hover {
+  background: var(--demo-soft-surface-strong);
+}
+
+cap-sheet-trigger.demo-icon-button {
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  border: 0.0625rem solid var(--demo-border);
+  border-radius: 999rem;
+  background: var(--demo-soft-surface);
+  color: var(--demo-text);
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+cap-sheet-trigger.demo-icon-button:hover {
   background: var(--demo-soft-surface-strong);
 }
 
@@ -245,6 +264,10 @@ cap-sheet-content.demo-sheet-content {
   padding: 0 clamp(1.25rem, 4vw, 2rem) calc(1.5rem + env(safe-area-inset-bottom, 0em));
 }
 
+cap-sheet-content.demo-sheet-content:focus {
+  outline: none;
+}
+
 cap-sheet-content.demo-sheet--long {
   height: min(100%, 42em);
 }
@@ -328,6 +351,11 @@ cap-sheet-content.demo-sheet--form {
   padding-inline-end: 0.35em;
 }
 
+.demo-scroll cap-scroll-content {
+  display: grid;
+  gap: 0.75rem;
+}
+
 .demo-field {
   display: grid;
   gap: 0.35em;
@@ -354,12 +382,30 @@ cap-sheet-content.demo-sheet--form {
   gap: 1em;
 }
 
+.demo-toast-copy {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.demo-toast-copy strong {
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.demo-toast-copy p {
+  margin: 0;
+  color: var(--demo-muted);
+  line-height: 1.35;
+}
+
 cap-sheet-content.demo-sheet--toast {
-  width: min(calc(100% - 2em), 28em);
-  height: min(100%, 8em);
-  margin-block-end: 1em;
+  width: min(calc(100% - 2em), 30em);
+  height: auto;
+  margin-block-end: calc(1em + env(safe-area-inset-bottom, 0em));
   border-radius: var(--demo-radius-md);
-  padding-block-start: 1em;
+  padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0em));
+  overflow: visible;
 }
 
 cap-sheet-content.demo-sheet--detached,
@@ -378,8 +424,84 @@ cap-sheet-content.demo-sheet--persistent {
 }
 
 cap-sheet-content.demo-sheet--top {
-  height: min(100%, 14em);
-  padding-block-start: calc(1em + env(safe-area-inset-top, 0em));
+  width: min(100%, 36em);
+  height: min(100%, 42em);
+  border-radius: 0 0 1.5rem 1.5rem;
+  padding: calc(1rem + env(safe-area-inset-top, 0em)) clamp(1.25rem, 4vw, 1.75rem) 1.5rem;
+  box-shadow: 0 1.25rem 3rem rgb(20 23 22 / 0.16);
+}
+
+.demo-top-sheet {
+  display: grid;
+  gap: 0.75rem;
+  min-height: 100%;
+}
+
+.demo-top-head {
+  display: flex;
+  justify-content: end;
+  min-height: 3rem;
+}
+
+.demo-top-copy {
+  display: grid;
+  justify-items: center;
+  gap: 1.25rem;
+  text-align: center;
+}
+
+.demo-top-copy cap-sheet-title {
+  max-width: 9em;
+  margin: 0;
+  font-size: 2.4rem;
+  line-height: 1.05;
+}
+
+.demo-top-copy cap-sheet-description {
+  max-width: 27rem;
+  margin: 0;
+}
+
+.demo-top-visual {
+  position: relative;
+  width: min(100%, 18rem);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  background: linear-gradient(180deg, rgb(134 180 216) 0 58%, rgb(111 157 104) 58%), var(--demo-soft-surface);
+  box-shadow: inset 0 0 0 0.0625rem rgb(255 255 255 / 0.45);
+}
+
+.demo-top-visual::before,
+.demo-top-visual::after {
+  content: '';
+  position: absolute;
+  display: block;
+}
+
+.demo-top-visual::before {
+  width: 9.5rem;
+  height: 5.7rem;
+  inset-inline-start: 4.2rem;
+  inset-block-start: 9.1rem;
+  border-radius: 0.45rem 0.45rem 0.85rem 0.85rem;
+  background:
+    linear-gradient(90deg, transparent 0 38%, rgb(75 92 88) 38% 55%, transparent 55%),
+    linear-gradient(90deg, rgb(245 247 242) 0 28%, rgb(224 233 226) 28% 63%, rgb(245 247 242) 63%);
+  box-shadow: 0 1rem 2rem rgb(40 55 48 / 0.2);
+}
+
+.demo-top-visual::after {
+  width: 11rem;
+  height: 5.5rem;
+  inset-inline-start: 3.45rem;
+  inset-block-start: 6.75rem;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  background: #6c5d52;
+}
+
+.demo-top-primary {
+  min-width: 11rem;
 }
 
 cap-sheet-content.demo-sheet--stacked {

@@ -19,6 +19,7 @@ interface Usecase {
   summary: string;
   placement: SheetPlacement;
   detents?: string[];
+  handle?: boolean;
   sheetClass?: string;
   backdrop?: boolean;
   options?: SheetOptions;
@@ -75,6 +76,7 @@ const usecases: Usecase[] = [
     summary: 'Non-blocking notification built from a sheet.',
     placement: 'bottom',
     detents: ['8em'],
+    handle: false,
     sheetClass: 'demo-sheet--toast',
     backdrop: false,
     options: {
@@ -105,9 +107,10 @@ const usecases: Usecase[] = [
   {
     slug: 'top-sheet',
     title: 'Top Sheet',
-    summary: 'Travel and dismiss from the top edge.',
+    summary: 'A top-anchored feature panel with a clear close control.',
     placement: 'top',
-    detents: ['14em'],
+    detents: ['42em'],
+    handle: false,
     sheetClass: 'demo-sheet--top',
   },
   {
@@ -277,7 +280,7 @@ function renderSheet(usecase: Usecase, index: number): string {
 function renderSingleSheet(usecase: Usecase, index: number, stackId?: string, child = false): string {
   const id = child ? `${getSheetId(usecase, index)}-child` : getSheetId(usecase, index);
   const detents = usecase.detents?.join(' ') || '';
-  const hasHandle = usecase.placement !== 'center';
+  const hasHandle = usecase.handle !== false && usecase.placement !== 'center';
   const stackAttr = stackId ? ` stack="${stackId}"` : '';
   const detentAttr = detents ? ` detents="${escapeHtml(detents)}"` : '';
   const backdrop = usecase.backdrop === false ? '' : '<cap-sheet-backdrop></cap-sheet-backdrop>';
@@ -355,10 +358,28 @@ function renderSheetBody(usecase: Usecase, index: number, child: boolean): strin
     case 'toast':
       return `
         <div class="demo-toast-row">
-          <strong>Update ready</strong>
+          <div class="demo-toast-copy">
+            <strong>Update ready</strong>
+            <p>Outside content remains interactive.</p>
+          </div>
           ${close}
         </div>
-        <p>Outside content remains interactive.</p>
+      `;
+    case 'top-sheet':
+      return `
+        <div class="demo-top-sheet">
+          <div class="demo-top-head">
+            <cap-sheet-trigger class="demo-icon-button" action="dismiss" aria-label="Close top sheet">&#215;</cap-sheet-trigger>
+          </div>
+          <div class="demo-top-copy">
+            <cap-sheet-title>Terrace Loft is Available</cap-sheet-title>
+            <div class="demo-top-visual" role="img" aria-label="Modern terrace home with blue sky"></div>
+            <cap-sheet-description>
+              A bright two-bedroom stay with skyline views, warm interiors, and a private garden terrace.
+            </cap-sheet-description>
+            <cap-sheet-trigger class="demo-button demo-top-primary" action="dismiss">Book it now</cap-sheet-trigger>
+          </div>
+        </div>
       `;
     case 'page-from-bottom':
     case 'page':
