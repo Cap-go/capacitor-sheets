@@ -58,7 +58,7 @@
     "verify:web": "bun run build && bun run typecheck",
     "lint": "bun run eslint && bun run prettier -- --check",
     "fmt": "bun run eslint -- --fix && bun run prettier -- --write",
-    "eslint": "eslint .",
+    "eslint": "eslint . --ignore-path .gitignore",
     "prettier": "prettier-pretty-check \"**/*.{css,html,ts,js,json,md}\"",
     "prepublishOnly": "bun run build"
   },
@@ -100,7 +100,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "@vitejs/plugin-vue": "^6.0.6",
-    "eslint": "^10.0.0",
+    "eslint": "^8.57.1",
     "eslint-plugin-import": "^2.31.0",
     "husky": "^9.1.7",
     "prettier": "^3.6.2",
