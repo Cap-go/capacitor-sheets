@@ -132,7 +132,7 @@ function resolveSafeAreaEdges(value: SheetSafeAreaMode | undefined): SheetSafeAr
   return safeAreaEdges;
 }
 
-function readOptionsFromElement(root: HTMLElement): SheetOptions {
+export function readOptionsFromElement(root: HTMLElement): SheetOptions {
   const placement = parsePlacement(root.getAttribute('content-placement'));
   const defaultActiveDetent = parseNumber(root.getAttribute('default-active-detent'));
   const activeDetent = parseNumber(root.getAttribute('active-detent'));
@@ -223,7 +223,7 @@ export class SheetController {
   private lockedScroll = false;
   private previousBodyOverflow = '';
   private previousBodyTouchAction = '';
-  private inertedElements = new Map<HTMLElement, string | null>();
+  private inertedElements = new Map<HTMLElement, { inert: boolean; ariaHidden: string | null }>();
   private previousFocus: Element | null = null;
   private hasThemeDimmer = false;
   private stackId: string | null = null;
@@ -996,21 +996,25 @@ export class SheetController {
     this.clearInert();
     for (const child of Array.from(body.children)) {
       if (!(child instanceof HTMLElement)) continue;
+      this.inertedElements.set(child, { inert: child.inert, ariaHidden: child.getAttribute('aria-hidden') });
       const isAllowed = Array.from(allowed).some((element) => child === element || child.contains(element));
-      if (isAllowed) continue;
-      this.inertedElements.set(child, child.getAttribute('aria-hidden'));
+      if (isAllowed) {
+        child.inert = false;
+        child.removeAttribute('aria-hidden');
+        continue;
+      }
       child.inert = true;
       child.setAttribute('aria-hidden', 'true');
     }
   }
 
   private clearInert(): void {
-    for (const [element, ariaHidden] of this.inertedElements) {
-      element.inert = false;
-      if (ariaHidden === null) {
+    for (const [element, state] of this.inertedElements) {
+      element.inert = state.inert;
+      if (state.ariaHidden === null) {
         element.removeAttribute('aria-hidden');
       } else {
-        element.setAttribute('aria-hidden', ariaHidden);
+        element.setAttribute('aria-hidden', state.ariaHidden);
       }
     }
     this.inertedElements.clear();
