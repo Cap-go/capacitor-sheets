@@ -288,7 +288,7 @@ export class SheetController {
 
   private readonly handlePointerMove = (event: PointerEvent): void => {
     const travel = this.pointerTravel;
-    if (!travel || travel.id !== event.pointerId) return;
+    if (travel?.id !== event.pointerId) return;
 
     const axis = isVerticalTrack(this.activeTrack) ? 'y' : 'x';
     const current = axis === 'y' ? event.clientY : event.clientX;
@@ -322,7 +322,7 @@ export class SheetController {
 
   private readonly handlePointerUp = (event: PointerEvent): void => {
     const travel = this.pointerTravel;
-    if (!travel || travel.id !== event.pointerId) return;
+    if (travel?.id !== event.pointerId) return;
 
     const currentTarget = event.currentTarget as HTMLElement | null;
     if (currentTarget?.hasPointerCapture?.(event.pointerId)) {
@@ -740,7 +740,7 @@ export class SheetController {
     );
 
     const started = performance.now();
-    let frame = 0;
+    let frame: number;
     const tick = (): void => {
       const progress = duration === 0 ? 1 : clamp((performance.now() - started) / duration, 0, 1);
       const offset = startOffset + (targetOffsetPx - startOffset) * progress;

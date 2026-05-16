@@ -152,7 +152,7 @@ export function getSheetFromElement(element: Element): CapSheet | null {
 }
 
 function isCapSheetElement(element: Element | null): element is CapSheet {
-  if (!element || element.localName !== 'cap-sheet') return false;
+  if (element?.localName !== 'cap-sheet') return false;
   const candidate = element as Partial<CapSheet>;
   return typeof candidate.present === 'function' && typeof candidate.dismiss === 'function';
 }

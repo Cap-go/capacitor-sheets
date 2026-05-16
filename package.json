@@ -84,6 +84,7 @@
   },
   "homepage": "https://capgo.app/docs/plugins/sheets/",
   "devDependencies": {
+    "@analogjs/vite-plugin-angular": "^2.5.1",
     "@angular-devkit/build-angular": "^21.2.11",
     "@angular/common": "^21.2.13",
     "@angular/compiler": "^21.2.13",
@@ -91,13 +92,16 @@
     "@angular/core": "^21.2.13",
     "@angular/platform-browser": "^21.2.13",
     "@angular/platform-browser-dynamic": "^21.2.13",
-    "@analogjs/vite-plugin-angular": "^2.5.1",
+    "@eslint/eslintrc": "^3.3.5",
+    "@eslint/js": "^10.0.1",
     "@ionic/eslint-config": "^0.4.0",
     "@ionic/prettier-config": "^4.0.0",
     "@sveltejs/vite-plugin-svelte": "^7.1.2",
     "@types/node": "^25.7.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@typescript-eslint/eslint-plugin": "^8.59.3",
+    "@typescript-eslint/parser": "^8.59.3",
     "@vitejs/plugin-react": "^6.0.1",
     "@vitejs/plugin-vue": "^6.0.6",
     "eslint": "^10.0.0",
@@ -153,9 +157,6 @@
   },
   "optionalDependencies": {
     "@rolldown/binding-wasm32-wasi": "1.0.1"
-  },
-  "eslintConfig": {
-    "extends": "@ionic/eslint-config/recommended"
   },
   "prettier": "@ionic/prettier-config"
 }
