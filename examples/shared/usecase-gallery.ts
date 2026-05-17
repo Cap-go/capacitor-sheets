@@ -13,6 +13,8 @@ type SheetOptions = Partial<CapSheetOptions> & {
 type SetupSheet = (element: HTMLElement, options?: SheetOptions) => () => void;
 type FrameworkName = 'Angular' | 'React' | 'Solid' | 'Svelte' | 'Vue';
 
+const DETACHED_CENTER_QUERY = '(min-width: 43.75rem)';
+
 interface Usecase {
   slug: string;
   title: string;
@@ -211,7 +213,10 @@ export function mountUsecaseGallery(
 
   const cleanups: (() => void)[] = [];
   for (const sheet of Array.from(host.querySelectorAll<HTMLElement>('cap-sheet[data-demo-sheet]'))) {
+    const usecase = findUsecase(sheet.dataset.demoUsecase || '');
+    const placementCleanup = setupResponsiveDemoPlacement(sheet, usecase);
     cleanups.push(options.setupSheet(sheet, getSheetOptions(sheet)));
+    cleanups.push(placementCleanup);
   }
 
   for (const outlet of Array.from(host.querySelectorAll<HTMLElement>('[data-demo-outlet="depth"]'))) {
@@ -700,12 +705,45 @@ function getSheetOptions(sheet: HTMLElement): SheetOptions {
 
   return {
     ...(usecase?.options || {}),
-    contentPlacement: (sheet.dataset.demoPlacement as SheetPlacement | undefined) || usecase?.placement || 'bottom',
+    contentPlacement: getResolvedDemoPlacement(sheet, usecase),
     detents: detents ? detents.split(/\s+/) : usecase?.detents,
     onTravel: ({ progress }) => {
       sheet.style.setProperty('--demo-sheet-progress', progress.toFixed(3));
     },
   };
+}
+
+function setupResponsiveDemoPlacement(sheet: HTMLElement, usecase: Usecase | undefined): () => void {
+  if (usecase?.slug !== 'detached-sheet' || typeof window === 'undefined' || !window.matchMedia) {
+    return () => {};
+  }
+
+  const query = window.matchMedia(DETACHED_CENTER_QUERY);
+  const apply = (): void => {
+    applyDemoPlacement(sheet, query.matches ? 'center' : usecase.placement);
+  };
+
+  apply();
+  query.addEventListener('change', apply);
+  return () => query.removeEventListener('change', apply);
+}
+
+function getResolvedDemoPlacement(sheet: HTMLElement, usecase: Usecase | undefined): SheetPlacement {
+  const placement = (sheet.dataset.demoPlacement as SheetPlacement | undefined) || usecase?.placement || 'bottom';
+  if (
+    usecase?.slug === 'detached-sheet' &&
+    typeof window !== 'undefined' &&
+    window.matchMedia?.(DETACHED_CENTER_QUERY).matches
+  ) {
+    return 'center';
+  }
+
+  return placement;
+}
+
+function applyDemoPlacement(sheet: HTMLElement, placement: SheetPlacement): void {
+  sheet.setAttribute('content-placement', placement);
+  sheet.querySelector('cap-sheet-view')?.setAttribute('content-placement', placement);
 }
 
 function findUsecase(slug: string): Usecase | undefined {
