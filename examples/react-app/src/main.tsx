@@ -1,23 +1,11 @@
-import { setupSheet } from '@capgo/capacitor-sheets/react';
-import { useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import '@capgo/capacitor-sheets';
-import { mountUsecaseGallery } from '../../shared/usecase-gallery';
 import './styles.css';
+import { UsecaseGallery } from './UsecaseGallery';
 
 function App() {
-  const galleryRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!galleryRef.current) return;
-    return mountUsecaseGallery(galleryRef.current, {
-      framework: 'React',
-      setupSheet,
-    });
-  }, []);
-
-  return <div ref={galleryRef} />;
+  return <UsecaseGallery />;
 }
 
 const root = document.getElementById('root');

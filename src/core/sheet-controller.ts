@@ -371,14 +371,16 @@ export class SheetController {
     this.root = root;
     this.options = readOptionsFromElement(root);
     this.id = this.options.componentId || root.id || createId('cap-sheet');
-    if (!root.id) root.id = this.id;
   }
 
   /** Connect the controller to the DOM and initialize current state. */
   connect(): void {
     if (this.connected) return;
     this.connected = true;
-    this.configure(readOptionsFromElement(this.root));
+    const elementOptions = readOptionsFromElement(this.root);
+    (this as { id: string }).id = elementOptions.componentId || this.root.id || this.id;
+    if (!this.root.id) this.root.id = this.id;
+    this.configure(elementOptions);
 
     const nextPresented = this.options.presented ?? this.options.defaultPresented ?? false;
     this.activeDetent = this.resolveInitialDetent();

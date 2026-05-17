@@ -1,0 +1,882 @@
+import { setupSheet } from '@capgo/capacitor-sheets/react';
+import type {
+  SheetActiveDetentChangeEvent,
+  SheetOptions as CapSheetOptions,
+  SheetTravelEvent,
+} from '@capgo/capacitor-sheets';
+import { useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
+
+type SheetPlacement = 'top' | 'bottom' | 'left' | 'right' | 'center';
+type SheetOptions = Partial<CapSheetOptions> & {
+  onPresentedChange?: (event: { presented: boolean; source: string }) => void;
+  onActiveDetentChange?: (event: SheetActiveDetentChangeEvent) => void;
+  onTravel?: (event: SheetTravelEvent) => void;
+};
+
+interface Usecase {
+  slug: string;
+  title: string;
+  summary: string;
+  placement: SheetPlacement;
+  detents?: string[];
+  handle?: boolean;
+  sheetClass?: string;
+  backdrop?: boolean;
+  options?: SheetOptions;
+  outlet?: 'depth' | 'parallax';
+  child?: Usecase;
+}
+
+const DETACHED_CENTER_QUERY = '(min-width: 43.75rem)';
+
+const usecases: Usecase[] = [
+  {
+    slug: 'long-sheet',
+    title: 'Long Sheet',
+    summary: 'A full-height story page that scrolls inside the sheet.',
+    placement: 'bottom',
+    detents: ['100dvh'],
+    handle: false,
+    sheetClass: 'demo-sheet--long',
+  },
+  {
+    slug: 'sheet-with-detent',
+    title: 'Sheet with Detent',
+    summary: 'A contact picker opens at a useful intermediate stop.',
+    placement: 'bottom',
+    detents: ['35em'],
+    sheetClass: 'demo-sheet--detents',
+    options: { defaultActiveDetent: 1 },
+  },
+  {
+    slug: 'sidebar',
+    title: 'Sidebar',
+    summary: 'A full-height navigation panel from the left edge.',
+    placement: 'left',
+    detents: ['20.25em'],
+    handle: false,
+    sheetClass: 'demo-sheet--side',
+  },
+  {
+    slug: 'bottom-sheet',
+    title: 'Bottom Sheet',
+    summary: 'A standard native-feeling mobile bottom sheet.',
+    placement: 'bottom',
+    detents: ['18em', '32em'],
+    sheetClass: 'demo-sheet--bottom',
+  },
+  {
+    slug: 'sheet-with-keyboard',
+    title: 'Sheet with Keyboard',
+    summary: 'Focused inputs stay above the visual viewport.',
+    placement: 'bottom',
+    detents: ['24em', '38em'],
+    sheetClass: 'demo-sheet--form',
+    options: { nativeFocusScrollPrevention: true },
+  },
+  {
+    slug: 'toast',
+    title: 'Toast',
+    summary: 'Non-blocking notification built from a sheet.',
+    placement: 'bottom',
+    detents: ['8em'],
+    handle: false,
+    sheetClass: 'demo-sheet--toast',
+    backdrop: false,
+    options: {
+      sheetRole: 'status',
+      inertOutside: false,
+      closeOnOutsideClick: false,
+      closeOnEscape: true,
+      focusTrap: false,
+      restoreFocus: false,
+    },
+  },
+  {
+    slug: 'detached-sheet',
+    title: 'Detached Sheet',
+    summary: 'A floating confirmation surface with rounded corners.',
+    placement: 'bottom',
+    detents: ['32.5em'],
+    sheetClass: 'demo-sheet--detached',
+  },
+  {
+    slug: 'page-from-bottom',
+    title: 'Page from Bottom',
+    summary: 'A full-page flow presented from the bottom edge.',
+    placement: 'bottom',
+    detents: ['100dvh'],
+    sheetClass: 'demo-sheet--page',
+  },
+  {
+    slug: 'top-sheet',
+    title: 'Top Sheet',
+    summary: 'A top-anchored feature panel with a clear close control.',
+    placement: 'top',
+    detents: ['42em'],
+    handle: false,
+    sheetClass: 'demo-sheet--top',
+  },
+  {
+    slug: 'sheet-with-stacking',
+    title: 'Sheet with Stacking',
+    summary: 'A second sheet stacks above the first one.',
+    placement: 'bottom',
+    detents: ['20em', '32em'],
+    sheetClass: 'demo-sheet--stack-parent',
+    options: { defaultActiveDetent: 2 },
+    child: {
+      slug: 'sheet-with-stacking-child',
+      title: 'Stacked Details',
+      summary: 'Second layer on the same stack.',
+      placement: 'bottom',
+      detents: ['18em', '28em'],
+      sheetClass: 'demo-sheet--stacked',
+      options: { defaultActiveDetent: 2 },
+    },
+  },
+  {
+    slug: 'sheet-with-depth',
+    title: 'Sheet with Depth',
+    summary: 'Sheet progress scales the page behind it.',
+    placement: 'bottom',
+    detents: ['28em', '46em'],
+    sheetClass: 'demo-sheet--depth',
+    outlet: 'depth',
+    options: { defaultActiveDetent: 2 },
+  },
+  {
+    slug: 'parallax-page',
+    title: 'Parallax Page',
+    summary: 'Sheet progress drives a parallax background.',
+    placement: 'bottom',
+    detents: ['18em', '36em'],
+    sheetClass: 'demo-sheet--parallax',
+    outlet: 'parallax',
+  },
+  {
+    slug: 'page',
+    title: 'Page',
+    summary: 'Route-like page overlay from the right edge.',
+    placement: 'right',
+    detents: ['100dvw'],
+    sheetClass: 'demo-sheet--page demo-sheet--right-page',
+  },
+  {
+    slug: 'lightbox',
+    title: 'Lightbox',
+    summary: 'Full-screen image viewing with a dark comment sheet.',
+    placement: 'center',
+    handle: false,
+    sheetClass: 'demo-sheet--lightbox',
+    child: {
+      slug: 'lightbox-comments',
+      title: 'Comments',
+      summary: 'Dark comment sheet over the lightbox.',
+      placement: 'bottom',
+      detents: ['60dvh', '100dvh'],
+      handle: false,
+      sheetClass: 'demo-sheet--lightbox-comments',
+      options: { defaultActiveDetent: 1 },
+    },
+  },
+  {
+    slug: 'persistent-sheet-with-detent',
+    title: 'Persistent Sheet with Detent',
+    summary: 'A mini player stays available while the page remains interactive.',
+    placement: 'bottom',
+    detents: ['4.75em', '100dvh'],
+    handle: false,
+    sheetClass: 'demo-sheet--persistent',
+    options: {
+      defaultActiveDetent: 1,
+      inertOutside: false,
+      closeOnOutsideClick: false,
+      focusTrap: false,
+      swipeDismissal: false,
+    },
+  },
+  {
+    slug: 'card',
+    title: 'Card',
+    summary: 'A compact event card with one clear action.',
+    placement: 'center',
+    sheetClass: 'demo-sheet--card',
+  },
+];
+
+const contacts = [
+  ['one', 'Emma Schmidt', 'Blue Horizon'],
+  ['two', 'Liam Muller', 'Evergreen Solutions'],
+  ['three', 'Olivia Dupont', 'Nova Ventures'],
+  ['four', 'Noah Garcia', 'Bridges Collective'],
+  ['five', 'Ava Rossi', 'Vivid Ideas'],
+  ['six', 'Sophia Ivanova', 'Rise Solutions'],
+  ['seven', 'Mia Laurent', 'Northline Studio'],
+  ['eight', 'Leo Park', 'Atlas Workshop'],
+];
+
+const sidebarGroups: [string, [string, string][]][] = [
+  [
+    'Dashboard',
+    [
+      ['overview', 'Overview'],
+      ['analytics', 'Analytics'],
+      ['activity', 'Recent Activity'],
+    ],
+  ],
+  [
+    'Projects',
+    [
+      ['projects', 'All Projects'],
+      ['home', 'My Projects'],
+      ['archive', 'Archived Projects'],
+      ['create', 'Create New Project'],
+    ],
+  ],
+  [
+    'Teams',
+    [
+      ['team', 'Team Members'],
+      ['shield', 'Roles & Permissions'],
+      ['invite', 'Invite Members'],
+      ['settings', 'Team Settings'],
+    ],
+  ],
+  [
+    'Settings',
+    [
+      ['account', 'Account Settings'],
+      ['profile', 'Profile Settings'],
+      ['billing', 'Billing Information'],
+      ['integrations', 'Integrations'],
+      ['notifications', 'Notifications'],
+    ],
+  ],
+];
+
+export function UsecaseGallery() {
+  const depthUsecaseIndex = usecases.findIndex((usecase) => usecase.slug === 'sheet-with-depth');
+  const depthUsecase = depthUsecaseIndex >= 0 ? usecases[depthUsecaseIndex] : undefined;
+  const depthOutletFor = depthUsecase ? getSheetId(depthUsecase, depthUsecaseIndex) : undefined;
+
+  return (
+    <>
+      {usecases.map((usecase, index) => (
+        <SheetTree key={usecase.slug} usecase={usecase} index={index} />
+      ))}
+
+      <TravelOutlet for={depthOutletFor} className="demo-depth-stage" type="depth">
+        <main className="demo-app">
+          <header className="demo-hero">
+            <div>
+              <p className="demo-kicker">React playground</p>
+              <h1>Capgo Sheets usecases</h1>
+              <p>Open every sheet pattern from the real preview viewport. No fake phone frame, no clipped overlay.</p>
+            </div>
+            <a className="demo-link" href="https://github.com/Cap-go/capacitor-sheets" target="_blank" rel="noreferrer">
+              GitHub
+            </a>
+          </header>
+
+          <section className="demo-grid" aria-label="Sheet usecases">
+            {usecases.map((usecase, index) => (
+              <UsecaseCard key={usecase.slug} usecase={usecase} index={index} />
+            ))}
+          </section>
+        </main>
+      </TravelOutlet>
+    </>
+  );
+}
+
+function SheetTree({ usecase, index }: { usecase: Usecase; index: number }) {
+  if (!usecase.child) return <DemoSheet usecase={usecase} index={index} />;
+
+  const stackId = `demo-stack-${index}`;
+  return (
+    <cap-sheet-stack id={stackId}>
+      <DemoSheet usecase={usecase} index={index} stackId={stackId} />
+      <DemoSheet usecase={usecase.child} index={index} stackId={stackId} child />
+    </cap-sheet-stack>
+  );
+}
+
+function DemoSheet({
+  usecase,
+  index,
+  stackId,
+  child = false,
+}: {
+  usecase: Usecase;
+  index: number;
+  stackId?: string;
+  child?: boolean;
+}) {
+  const sheetRef = useRef<HTMLElement | null>(null);
+  const [placement, setPlacement] = useState<SheetPlacement>(() => getResponsivePlacement(usecase));
+  const id = getSheetRenderId(usecase, index, child);
+  const detents = usecase.detents?.join(' ') || undefined;
+  const hasHandle = usecase.handle !== false && usecase.placement !== 'center';
+  const booleanAttributes = renderBooleanAttributes(usecase.options);
+
+  useEffect(() => {
+    if (usecase.slug !== 'detached-sheet' || typeof window === 'undefined') return;
+
+    const query = window.matchMedia(DETACHED_CENTER_QUERY);
+    const sync = () => setPlacement(query.matches ? 'center' : usecase.placement);
+    sync();
+    query.addEventListener('change', sync);
+    return () => query.removeEventListener('change', sync);
+  }, [usecase]);
+
+  useEffect(() => {
+    const sheet = sheetRef.current;
+    if (!sheet) return;
+
+    return setupSheet(sheet, {
+      ...(usecase.options || {}),
+      contentPlacement: placement,
+      detents: usecase.detents,
+      onTravel: ({ progress }) => sheet.style.setProperty('--demo-sheet-progress', progress.toFixed(3)),
+    });
+  }, [usecase, placement]);
+
+  return (
+    <cap-sheet
+      ref={sheetRef}
+      id={id}
+      data-demo-sheet=""
+      data-demo-placement={usecase.placement}
+      data-demo-detents={detents || ''}
+      data-demo-usecase={usecase.slug}
+      content-placement={placement}
+      detents={detents}
+      stack={stackId}
+      {...booleanAttributes}
+    >
+      <cap-sheet-portal>
+        <cap-sheet-view content-placement={placement}>
+          {usecase.backdrop === false ? null : <cap-sheet-backdrop />}
+          <cap-sheet-content className={['demo-sheet-content', usecase.sheetClass].filter(Boolean).join(' ')}>
+            <cap-sheet-bleeding-background />
+            {hasHandle ? <cap-sheet-handle /> : null}
+            <SheetBody usecase={usecase} index={index} child={child} />
+          </cap-sheet-content>
+        </cap-sheet-view>
+      </cap-sheet-portal>
+    </cap-sheet>
+  );
+}
+
+function UsecaseCard({ usecase, index }: { usecase: Usecase; index: number }) {
+  const id = getSheetId(usecase, index);
+  const art = <CardArt usecase={usecase} />;
+
+  return (
+    <article className="demo-card">
+      {usecase.outlet === 'parallax' ? (
+        <TravelOutlet for={id} className="demo-card-art demo-card-art--parallax" type="parallax">
+          {art}
+        </TravelOutlet>
+      ) : (
+        <div className="demo-card-art">{art}</div>
+      )}
+      <div className="demo-card-body">
+        <p className="demo-chip">{placementLabel(usecase.placement)}</p>
+        <h2>{usecase.title}</h2>
+        <p>{usecase.summary}</p>
+        <cap-sheet-trigger className="demo-button" for={id} action="present">
+          Open demo
+        </cap-sheet-trigger>
+      </div>
+    </article>
+  );
+}
+
+function TravelOutlet({
+  children,
+  className,
+  for: target,
+  type,
+}: {
+  children: ReactNode;
+  className: string;
+  for?: string;
+  type: 'depth' | 'parallax';
+}) {
+  const outletRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const outlet = outletRef.current;
+    if (!outlet) return;
+
+    Object.assign(outlet, {
+      travelAnimation:
+        type === 'depth'
+          ? {
+              transform: ({ progress }: { progress: number }) =>
+                `translate3d(0, ${progress * 0.75}rem, 0) scale(${1 - progress * 0.09})`,
+              filter: ({ progress }: { progress: number }) =>
+                `saturate(${1 - progress * 0.18}) brightness(${1 - progress * 0.05})`,
+              'border-radius': ({ progress }: { progress: number }) => `${progress * 1.5}rem`,
+              'box-shadow': ({ progress }: { progress: number }) =>
+                progress > 0.01 ? `0 ${progress * 1.25}rem ${progress * 3.5}rem rgb(20 23 22 / 0.2)` : 'none',
+            }
+          : { '--demo-parallax-progress': ({ progress }: { progress: number }) => String(progress) },
+    });
+  }, [type]);
+
+  return (
+    <cap-sheet-outlet ref={outletRef} for={target} className={className}>
+      {children}
+    </cap-sheet-outlet>
+  );
+}
+
+function SheetBody({ usecase, index, child }: { usecase: Usecase; index: number; child: boolean }) {
+  const childId = usecase.child ? `${getSheetId(usecase.child, index)}-child` : '';
+  const title = <cap-sheet-title>{usecase.title}</cap-sheet-title>;
+  const description = <cap-sheet-description>{usecase.summary}</cap-sheet-description>;
+  const close = (
+    <cap-sheet-trigger className="demo-button demo-button--quiet" action="dismiss">
+      Close
+    </cap-sheet-trigger>
+  );
+
+  switch (usecase.slug) {
+    case 'long-sheet':
+      return <LongSheetStory />;
+    case 'sheet-with-detent':
+      return <ContactPicker />;
+    case 'detached-sheet':
+      return <MealCard />;
+    case 'sidebar':
+      return <SidebarContent />;
+    case 'sheet-with-keyboard':
+      return (
+        <>
+          {title}
+          {description}
+          <label className="demo-field">
+            <span>Destination</span>
+            <input placeholder="Type while the keyboard is open" />
+          </label>
+          <label className="demo-field">
+            <span>Notes</span>
+            <textarea rows={3} placeholder="The sheet follows visualViewport changes" />
+          </label>
+          {close}
+        </>
+      );
+    case 'toast':
+      return (
+        <div className="demo-toast-row">
+          <div className="demo-toast-copy">
+            <strong>Update ready</strong>
+            <p>Outside content remains interactive.</p>
+          </div>
+          {close}
+        </div>
+      );
+    case 'top-sheet':
+      return <TopSheetContent />;
+    case 'sheet-with-depth':
+      return <DepthProfile close={close} />;
+    case 'page-from-bottom':
+    case 'page':
+      return <PageContent usecase={usecase} close={close} />;
+    case 'sheet-with-stacking':
+      return (
+        <>
+          {title}
+          {description}
+          <p className="demo-row">This first layer stays below the next sheet.</p>
+          <div className="demo-actions">
+            <cap-sheet-trigger className="demo-button" for={childId} action="present">
+              Open stacked sheet
+            </cap-sheet-trigger>
+            {close}
+          </div>
+        </>
+      );
+    case 'sheet-with-stacking-child':
+      return (
+        <>
+          {title}
+          {description}
+          <p className="demo-row">Stack depth is handled by cap-sheet-stack.</p>
+          {close}
+        </>
+      );
+    case 'lightbox':
+      return <Lightbox childId={childId} />;
+    case 'lightbox-comments':
+      return <LightboxComments />;
+    case 'card':
+      return <EventCard />;
+    case 'persistent-sheet-with-detent':
+      return <PersistentPlayer />;
+    default:
+      return (
+        <>
+          {child ? null : title}
+          {child ? null : description}
+          <div className="demo-mini-list">
+            <span>Safe area aware</span>
+            <span>Gesture driven</span>
+            <span>Framework neutral</span>
+          </div>
+          {close}
+        </>
+      );
+  }
+}
+
+function LongSheetStory() {
+  return (
+    <cap-scroll className="demo-long-story">
+      <cap-scroll-content>
+        <article>
+          <div className="demo-long-hero" role="img" aria-label="White country house beneath birds in a golden field">
+            <cap-sheet-trigger className="demo-long-close" action="dismiss" aria-label="Close story">
+              ×
+            </cap-sheet-trigger>
+            <span className="demo-long-house" aria-hidden="true" />
+          </div>
+          <div className="demo-long-copy">
+            <cap-sheet-title>
+              Beneath the Golden Sky:
+              <br />A House in the Fields
+            </cap-sheet-title>
+            <cap-sheet-description>Where the Winds Carry Forgotten Stories</cap-sheet-description>
+            <p className="demo-long-byline">by Elara Whitmore</p>
+            <p>
+              In the heart of the vast, golden fields, where the sky met the earth in a tender embrace, stood a quiet
+              house that seemed to remember every season.
+            </p>
+            <p>
+              Its windows held the late light, its porch faced the moving wheat, and every evening the birds drew soft
+              lines across the pale blue air.
+            </p>
+            <p>
+              Travelers passed it slowly, as if the road itself asked them to look twice before returning to the noise
+              beyond the fields.
+            </p>
+          </div>
+        </article>
+      </cap-scroll-content>
+    </cap-scroll>
+  );
+}
+
+function ContactPicker() {
+  return (
+    <div className="demo-contact-picker">
+      <label className="demo-contact-search">
+        <span>Search contacts</span>
+        <input type="search" placeholder="Search for a contact" />
+      </label>
+      <cap-scroll className="demo-contact-list">
+        <cap-scroll-content>
+          {contacts.map(([tone, name, company]) => (
+            <article key={name} className="demo-contact-row">
+              <span className={`demo-contact-avatar demo-contact-avatar--${tone}`} aria-hidden="true" />
+              <span className="demo-contact-copy">
+                <strong>{name}</strong>
+                <small>{company}</small>
+              </span>
+            </article>
+          ))}
+        </cap-scroll-content>
+      </cap-scroll>
+    </div>
+  );
+}
+
+function MealCard() {
+  return (
+    <div className="demo-meal-card">
+      <div className="demo-meal-image" role="img" aria-label="Meal ingredients arranged on a table" />
+      <cap-sheet-title>Your Meal is Coming</cap-sheet-title>
+      <cap-sheet-description>
+        Your food is on its way and will arrive soon! Sit back and get ready to enjoy your meal.
+      </cap-sheet-description>
+      <cap-sheet-trigger className="demo-button demo-meal-button" action="dismiss">
+        Got it
+      </cap-sheet-trigger>
+    </div>
+  );
+}
+
+function SidebarContent() {
+  return (
+    <cap-scroll className="demo-sidebar">
+      <cap-scroll-content>
+        <div className="demo-sidebar-account">
+          <span className="demo-sidebar-logo" aria-hidden="true" />
+          <span>
+            <strong>Acme Inc.</strong>
+            <small>support@acme.com</small>
+          </span>
+        </div>
+        {sidebarGroups.map(([title, items]) => (
+          <section key={title} className="demo-sidebar-group">
+            <h3>{title}</h3>
+            <ul>
+              {items.map(([icon, label]) => (
+                <li key={label}>
+                  <span className={`demo-sidebar-item-icon demo-sidebar-item-icon--${icon}`} aria-hidden="true" />
+                  <span>{label}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </cap-scroll-content>
+    </cap-scroll>
+  );
+}
+
+function TopSheetContent() {
+  return (
+    <div className="demo-top-sheet">
+      <div className="demo-top-head">
+        <cap-sheet-trigger className="demo-icon-button" action="dismiss" aria-label="Close top sheet">
+          ×
+        </cap-sheet-trigger>
+      </div>
+      <div className="demo-top-copy">
+        <cap-sheet-title>Terrace Loft is Available</cap-sheet-title>
+        <div className="demo-top-visual" role="img" aria-label="Modern terrace home with blue sky" />
+        <cap-sheet-description>
+          A bright two-bedroom stay with skyline views, warm interiors, and a private garden terrace.
+        </cap-sheet-description>
+        <cap-sheet-trigger className="demo-button demo-top-primary" action="dismiss">
+          Book it now
+        </cap-sheet-trigger>
+      </div>
+    </div>
+  );
+}
+
+function DepthProfile({ close }: { close: ReactNode }) {
+  return (
+    <div className="demo-depth-profile">
+      <div className="demo-depth-cover" role="img" aria-label="Mountain lake at sunrise" />
+      <div className="demo-depth-avatar" aria-hidden="true" />
+      <cap-sheet-title>Maya Chen</cap-sheet-title>
+      <cap-sheet-description>
+        Product designer, weekend climber, and host of quiet cabins across the alpine coast.
+      </cap-sheet-description>
+      <div className="demo-depth-stats" aria-label="Profile stats">
+        <span>
+          <strong>42</strong>
+          <small>stays</small>
+        </span>
+        <span>
+          <strong>4.9</strong>
+          <small>rating</small>
+        </span>
+        <span>
+          <strong>18k</strong>
+          <small>views</small>
+        </span>
+      </div>
+      <div className="demo-actions demo-actions--compact">
+        <cap-sheet-trigger className="demo-button" action="dismiss">
+          Follow
+        </cap-sheet-trigger>
+        {close}
+      </div>
+      <div className="demo-depth-list">
+        <article>
+          <span>Latest guide</span>
+          <strong>Three ridge walks above Lake Annecy</strong>
+        </article>
+        <article>
+          <span>Open weekend</span>
+          <strong>Cabin No. 7 has two nights free</strong>
+        </article>
+      </div>
+    </div>
+  );
+}
+
+function PageContent({ usecase, close }: { usecase: Usecase; close: ReactNode }) {
+  return (
+    <>
+      <div className="demo-page-head">
+        <span>{usecase.title}</span>
+        {close}
+      </div>
+      <div className="demo-page-layout">
+        <p>{usecase.summary}</p>
+        <button type="button">Primary action</button>
+        <button type="button">Secondary action</button>
+      </div>
+    </>
+  );
+}
+
+function Lightbox({ childId }: { childId: string }) {
+  return (
+    <div className="demo-lightbox">
+      <cap-sheet-trigger className="demo-lightbox-close" action="dismiss" aria-label="Close lightbox" />
+      <div className="demo-lightbox-photo" role="img" aria-label="Santorini coast with white buildings and blue sea" />
+      <cap-sheet-trigger className="demo-lightbox-comments-trigger" for={childId} action="present">
+        Comments
+      </cap-sheet-trigger>
+    </div>
+  );
+}
+
+function LightboxComments() {
+  const comments = [
+    ['one', 'Emma Schmidt', 'The view is absolutely breathtaking. The city and sea feel perfectly balanced.'],
+    ['two', 'Liam Muller', 'That waterline is unreal. I would frame this shot.'],
+    ['three', 'Olivia Dupont', 'The hillside, the bright sky, and the white rooftops make the whole scene feel calm.'],
+    ['four', 'Noah Garcia', 'The contrast between the village and open water is excellent.'],
+    ['five', 'Ava Rossi', 'This makes me want to head straight to the coast. The composition feels inviting.'],
+  ];
+  return (
+    <div className="demo-lightbox-comments">
+      <div className="demo-lightbox-comments-head">
+        <cap-sheet-trigger className="demo-lightbox-comments-close" action="dismiss" aria-label="Close comments" />
+        <cap-sheet-title>Comments</cap-sheet-title>
+      </div>
+      <div className="demo-lightbox-comments-list">
+        {comments.map(([tone, name, text]) => (
+          <article key={name} className="demo-lightbox-comment">
+            <span className={`demo-lightbox-avatar demo-lightbox-avatar--${tone}`} aria-hidden="true" />
+            <div className="demo-lightbox-comment-bubble">
+              <strong>{name}</strong>
+              <p>{text}</p>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function EventCard() {
+  return (
+    <div className="demo-event-card">
+      <cap-sheet-trigger className="demo-icon-button demo-event-card-close" action="dismiss" aria-label="Close card">
+        ×
+      </cap-sheet-trigger>
+      <div className="demo-event-art" role="img" aria-label="Paint brushes on a workshop table" />
+      <div className="demo-event-copy">
+        <cap-sheet-title>Paint and Sip</cap-sheet-title>
+        <cap-sheet-description>
+          Join a relaxed studio night with color, music, and a glass of something bright.
+        </cap-sheet-description>
+        <cap-sheet-trigger className="demo-button demo-event-primary" action="dismiss">
+          Reserve spot
+        </cap-sheet-trigger>
+      </div>
+    </div>
+  );
+}
+
+function PersistentPlayer() {
+  return (
+    <div className="demo-player">
+      <div className="demo-player-mini">
+        <cap-sheet-trigger className="demo-player-mini-main" action="step" detent="2" aria-label="Expand player">
+          <span className="demo-player-mini-art" aria-hidden="true" />
+          <span>
+            <strong>Barcelona Dreams</strong>
+            <small>Eira Voss</small>
+          </span>
+        </cap-sheet-trigger>
+        <cap-sheet-trigger className="demo-icon-button" action="dismiss" aria-label="Close player">
+          ×
+        </cap-sheet-trigger>
+      </div>
+      <div className="demo-player-expanded">
+        <div className="demo-player-art" role="img" aria-label="Barcelona Dreams album cover" />
+        <div className="demo-player-copy">
+          <cap-sheet-title>Barcelona Dreams</cap-sheet-title>
+          <cap-sheet-description>Eira Voss</cap-sheet-description>
+        </div>
+        <input
+          className="demo-player-range"
+          type="range"
+          min="0"
+          max="1000"
+          defaultValue="700"
+          aria-label="Track progress"
+        />
+        <div className="demo-player-controls" aria-label="Playback controls">
+          <button type="button" aria-label="Previous track">
+            Back
+          </button>
+          <button type="button" aria-label="Play track">
+            Play
+          </button>
+          <button type="button" aria-label="Next track">
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CardArt({ usecase }: { usecase: Usecase }) {
+  const label = usecase.title
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 3)
+    .toUpperCase();
+  return (
+    <>
+      <span>{label}</span>
+      <i />
+      <b />
+    </>
+  );
+}
+
+function getResponsivePlacement(usecase: Usecase): SheetPlacement {
+  if (
+    usecase.slug === 'detached-sheet' &&
+    typeof window !== 'undefined' &&
+    window.matchMedia?.(DETACHED_CENTER_QUERY).matches
+  )
+    return 'center';
+  return usecase.placement;
+}
+
+function getSheetId(usecase: Usecase, index: number): string {
+  return `demo-${index}-${usecase.slug}`;
+}
+
+function getSheetRenderId(usecase: Usecase, index: number, child: boolean): string {
+  return child ? `${getSheetId(usecase, index)}-child` : getSheetId(usecase, index);
+}
+
+function placementLabel(placement: SheetPlacement): string {
+  return placement === 'center' ? 'center' : `${placement} edge`;
+}
+
+function renderBooleanAttributes(options?: SheetOptions): Record<string, string> {
+  if (!options) return {};
+  return Object.fromEntries(
+    [
+      ['swipe-dismissal', options.swipeDismissal],
+      ['inert-outside', options.inertOutside],
+      ['close-on-outside-click', options.closeOnOutsideClick],
+      ['close-on-escape', options.closeOnEscape],
+      ['focus-trap', options.focusTrap],
+      ['restore-focus', options.restoreFocus],
+      ['native-focus-scroll-prevention', options.nativeFocusScrollPrevention],
+    ]
+      .filter(([, value]) => typeof value === 'boolean')
+      .map(([name, value]) => [name, String(value)]),
+  );
+}
