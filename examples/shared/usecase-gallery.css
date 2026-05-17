@@ -715,7 +715,7 @@ cap-sheet-content.demo-sheet--card {
   width: 1.45rem;
   height: 0.125rem;
   border-radius: 999rem;
-  background: currentColor;
+  background: currentcolor;
 }
 
 .demo-lightbox-close::before {
@@ -795,9 +795,9 @@ cap-sheet-content.demo-sheet--card {
   content: '';
   width: 1.1rem;
   height: 1rem;
-  border: 0.125rem solid currentColor;
+  border: 0.125rem solid currentcolor;
   border-radius: 999rem;
-  box-shadow: -0.22rem 0.3rem 0 -0.12rem currentColor;
+  box-shadow: -0.22rem 0.3rem 0 -0.12rem currentcolor;
 }
 
 .demo-lightbox-comments {
@@ -826,8 +826,8 @@ cap-sheet-content.demo-sheet--card {
   content: '';
   width: 0.85rem;
   height: 0.85rem;
-  border-inline-start: 0.18rem solid currentColor;
-  border-block-end: 0.18rem solid currentColor;
+  border-inline-start: 0.18rem solid currentcolor;
+  border-block-end: 0.18rem solid currentcolor;
   transform: rotate(-45deg);
 }
 
