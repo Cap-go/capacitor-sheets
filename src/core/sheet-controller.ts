@@ -202,7 +202,7 @@ function attributeBoolean(value: boolean): string {
 /** Imperative controller backing a `<cap-sheet>` custom element. */
 export class SheetController {
   readonly root: HTMLElement;
-  id: string;
+  readonly id: string;
   readonly parts: SheetParts = {
     outlets: new Set(),
     islands: new Set(),
@@ -378,7 +378,7 @@ export class SheetController {
     if (this.connected) return;
     this.connected = true;
     const elementOptions = readOptionsFromElement(this.root);
-    this.id = elementOptions.componentId || this.root.id || this.id;
+    (this as { id: string }).id = elementOptions.componentId || this.root.id || this.id;
     if (!this.root.id) this.root.id = this.id;
     this.configure(elementOptions);
 

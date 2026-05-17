@@ -221,6 +221,7 @@ const detachedCentered = ref(false);
 const sheetRefs = new Map<string, { element: HTMLElement; entry: SheetEntry }>();
 let sheetCleanups: (() => void)[] = [];
 let mediaQuery: MediaQueryList | undefined;
+let mediaListener: (() => void) | undefined;
 
 const depthUsecaseIndex = usecases.findIndex((usecase) => usecase.slug === 'sheet-with-depth');
 const depthUsecase = depthUsecaseIndex >= 0 ? usecases[depthUsecaseIndex] : undefined;
@@ -234,11 +235,8 @@ onMounted(() => {
 
   syncDetachedPlacement();
   mediaQuery.addEventListener('change', syncDetachedPlacement);
+  mediaListener = syncDetachedPlacement;
   nextTick(setupSheets);
-
-  onUnmounted(() => {
-    mediaQuery?.removeEventListener('change', syncDetachedPlacement);
-  });
 });
 
 watch(detachedCentered, () => {
@@ -246,6 +244,9 @@ watch(detachedCentered, () => {
 });
 
 onUnmounted(() => {
+  if (mediaQuery && mediaListener) {
+    mediaQuery.removeEventListener('change', mediaListener);
+  }
   cleanupSheets();
 });
 
