@@ -161,9 +161,20 @@ const usecases: Usecase[] = [
   {
     slug: 'lightbox',
     title: 'Lightbox',
-    summary: 'Centered media overlay with backdrop.',
+    summary: 'Full-screen image viewing with a dark comment sheet.',
     placement: 'center',
+    handle: false,
     sheetClass: 'demo-sheet--lightbox',
+    child: {
+      slug: 'lightbox-comments',
+      title: 'Comments',
+      summary: 'Dark comment sheet over the lightbox.',
+      placement: 'bottom',
+      detents: ['60dvh', '100dvh'],
+      handle: false,
+      sheetClass: 'demo-sheet--lightbox-comments',
+      options: { defaultActiveDetent: 1 },
+    },
   },
   {
     slug: 'persistent-sheet-with-detent',
@@ -456,10 +467,57 @@ function renderSheetBody(usecase: Usecase, index: number, child: boolean): strin
       `;
     case 'lightbox':
       return `
-        <div class="demo-lightbox-media">01</div>
-        ${title}
-        ${description}
-        ${close}
+        <div class="demo-lightbox">
+          <cap-sheet-trigger class="demo-lightbox-close" action="dismiss" aria-label="Close lightbox"></cap-sheet-trigger>
+          <div class="demo-lightbox-photo" role="img" aria-label="Santorini coast with white buildings and blue sea"></div>
+          <cap-sheet-trigger class="demo-lightbox-comments-trigger" for="${childId}" action="present">Comments</cap-sheet-trigger>
+        </div>
+      `;
+    case 'lightbox-comments':
+      return `
+        <div class="demo-lightbox-comments">
+          <div class="demo-lightbox-comments-head">
+            <cap-sheet-trigger class="demo-lightbox-comments-close" action="dismiss" aria-label="Close comments"></cap-sheet-trigger>
+            <cap-sheet-title>Comments</cap-sheet-title>
+          </div>
+          <div class="demo-lightbox-comments-list">
+            <article class="demo-lightbox-comment">
+              <span class="demo-lightbox-avatar demo-lightbox-avatar--one" aria-hidden="true"></span>
+              <div class="demo-lightbox-comment-bubble">
+                <strong>Emma Schmidt</strong>
+                <p>The view is absolutely breathtaking. The city and sea feel perfectly balanced.</p>
+              </div>
+            </article>
+            <article class="demo-lightbox-comment">
+              <span class="demo-lightbox-avatar demo-lightbox-avatar--two" aria-hidden="true"></span>
+              <div class="demo-lightbox-comment-bubble">
+                <strong>Liam Muller</strong>
+                <p>That waterline is unreal. I would frame this shot.</p>
+              </div>
+            </article>
+            <article class="demo-lightbox-comment">
+              <span class="demo-lightbox-avatar demo-lightbox-avatar--three" aria-hidden="true"></span>
+              <div class="demo-lightbox-comment-bubble">
+                <strong>Olivia Dupont</strong>
+                <p>The hillside, the bright sky, and the white rooftops make the whole scene feel calm.</p>
+              </div>
+            </article>
+            <article class="demo-lightbox-comment">
+              <span class="demo-lightbox-avatar demo-lightbox-avatar--four" aria-hidden="true"></span>
+              <div class="demo-lightbox-comment-bubble">
+                <strong>Noah Garcia</strong>
+                <p>The contrast between the village and open water is excellent.</p>
+              </div>
+            </article>
+            <article class="demo-lightbox-comment">
+              <span class="demo-lightbox-avatar demo-lightbox-avatar--five" aria-hidden="true"></span>
+              <div class="demo-lightbox-comment-bubble">
+                <strong>Ava Rossi</strong>
+                <p>This makes me want to head straight to the coast. The composition feels inviting.</p>
+              </div>
+            </article>
+          </div>
+        </div>
       `;
     case 'card':
       return `

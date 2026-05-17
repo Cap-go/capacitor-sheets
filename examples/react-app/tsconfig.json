@@ -8,7 +8,6 @@
     "jsx": "react-jsx",
     "skipLibCheck": true,
     "noEmit": true,
-    "baseUrl": ".",
     "paths": {
       "@capgo/capacitor-sheets": ["../../src/index.ts"],
       "@capgo/capacitor-sheets/react": ["../../src/react/index.ts"],

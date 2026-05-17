@@ -7,7 +7,6 @@
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "baseUrl": ".",
     "paths": {
       "@capgo/capacitor-sheets": ["../../src/index.ts"],
       "@capgo/capacitor-sheets/vue": ["../../src/vue/index.ts"]
