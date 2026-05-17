@@ -31,26 +31,28 @@ const usecases: Usecase[] = [
   {
     slug: 'long-sheet',
     title: 'Long Sheet',
-    summary: 'Tall scrollable content inside a mobile sheet.',
+    summary: 'A full-height story page that scrolls inside the sheet.',
     placement: 'bottom',
-    detents: ['20em', '42em'],
+    detents: ['100dvh'],
+    handle: false,
     sheetClass: 'demo-sheet--long',
   },
   {
     slug: 'sheet-with-detent',
     title: 'Sheet with Detent',
-    summary: 'Peek, mid, and expanded resting points.',
+    summary: 'A contact picker opens at a useful intermediate stop.',
     placement: 'bottom',
-    detents: ['12em', '24em', '40em'],
+    detents: ['35em'],
     sheetClass: 'demo-sheet--detents',
-    options: { defaultActiveDetent: 2 },
+    options: { defaultActiveDetent: 1 },
   },
   {
     slug: 'sidebar',
     title: 'Sidebar',
-    summary: 'The same primitive enters from the left edge.',
+    summary: 'A full-height navigation panel from the left edge.',
     placement: 'left',
-    detents: ['24em'],
+    detents: ['20.25em'],
+    handle: false,
     sheetClass: 'demo-sheet--side',
   },
   {
@@ -91,9 +93,9 @@ const usecases: Usecase[] = [
   {
     slug: 'detached-sheet',
     title: 'Detached Sheet',
-    summary: 'A floating bottom surface with margins.',
+    summary: 'A floating confirmation surface with rounded corners.',
     placement: 'bottom',
-    detents: ['18em', '30em'],
+    detents: ['32.5em'],
     sheetClass: 'demo-sheet--detached',
   },
   {
@@ -345,25 +347,96 @@ function renderSheetBody(usecase: Usecase, index: number, child: boolean): strin
   switch (usecase.slug) {
     case 'long-sheet':
       return `
-        ${title}
-        ${description}
-        <cap-scroll class="demo-scroll" axis="y">
+        <cap-scroll class="demo-long-story" axis="y">
           <cap-scroll-content>
-            ${Array.from({ length: 12 }, (_, item) => `<p class="demo-row">Route checkpoint ${item + 1}</p>`).join('')}
+            <article>
+              <div class="demo-long-hero" role="img" aria-label="White country house beneath birds in a golden field">
+                <cap-sheet-trigger class="demo-long-close" action="dismiss" aria-label="Close story">&#215;</cap-sheet-trigger>
+                <span class="demo-long-house" aria-hidden="true"></span>
+              </div>
+              <div class="demo-long-copy">
+                <cap-sheet-title>Beneath the Golden Sky:<br />A House in the Fields</cap-sheet-title>
+                <cap-sheet-description>Where the Winds Carry Forgotten Stories</cap-sheet-description>
+                <p class="demo-long-byline">by Elara Whitmore</p>
+                <p>
+                  In the heart of the vast, golden fields, where the sky met the earth in a tender embrace, stood a quiet
+                  house that seemed to remember every season.
+                </p>
+                <p>
+                  Its windows held the late light, its porch faced the moving wheat, and every evening the birds drew soft
+                  lines across the pale blue air.
+                </p>
+                <p>
+                  Travelers passed it slowly, as if the road itself asked them to look twice before returning to the noise
+                  beyond the fields.
+                </p>
+              </div>
+            </article>
           </cap-scroll-content>
         </cap-scroll>
-        ${close}
       `;
     case 'sheet-with-detent':
       return `
-        ${title}
-        ${description}
-        <div class="demo-actions demo-actions--compact">
-          <cap-sheet-trigger class="demo-button demo-button--quiet" action="step" detent="1">Peek</cap-sheet-trigger>
-          <cap-sheet-trigger class="demo-button demo-button--quiet" action="step" detent="2">Mid</cap-sheet-trigger>
-          <cap-sheet-trigger class="demo-button demo-button--quiet" action="step" detent="3">Full</cap-sheet-trigger>
-          ${close}
+        <div class="demo-contact-picker">
+          <label class="demo-contact-search">
+            <span>Search contacts</span>
+            <input type="search" placeholder="Search for a contact" />
+          </label>
+          <cap-scroll class="demo-contact-list" axis="y">
+            <cap-scroll-content>
+              ${renderContacts()}
+            </cap-scroll-content>
+          </cap-scroll>
         </div>
+      `;
+    case 'detached-sheet':
+      return `
+        <div class="demo-meal-card">
+          <div class="demo-meal-image" role="img" aria-label="Meal ingredients arranged on a table"></div>
+          <cap-sheet-title>Your Meal is Coming</cap-sheet-title>
+          <cap-sheet-description>
+            Your food is on its way and will arrive soon! Sit back and get ready to enjoy your meal.
+          </cap-sheet-description>
+          <cap-sheet-trigger class="demo-button demo-meal-button" action="dismiss">Got it</cap-sheet-trigger>
+        </div>
+      `;
+    case 'sidebar':
+      return `
+        <cap-scroll class="demo-sidebar" axis="y">
+          <cap-scroll-content>
+            <div class="demo-sidebar-account">
+              <span class="demo-sidebar-logo" aria-hidden="true"></span>
+              <span>
+                <strong>Acme Inc.</strong>
+                <small>support@acme.com</small>
+              </span>
+            </div>
+            ${renderSidebarGroup('Dashboard', [
+              ['overview', 'Overview'],
+              ['analytics', 'Analytics'],
+              ['activity', 'Recent Activity'],
+            ])}
+            ${renderSidebarGroup('Projects', [
+              ['projects', 'All Projects'],
+              ['home', 'My Projects'],
+              ['archive', 'Archived Projects'],
+              ['create', 'Create New Project'],
+            ])}
+            ${renderSidebarGroup('Teams', [
+              ['team', 'Team Members'],
+              ['shield', 'Roles & Permissions'],
+              ['invite', 'Invite Members'],
+              ['settings', 'Team Settings'],
+            ])}
+            ${renderSidebarGroup('Settings', [
+              ['account', 'Account Settings'],
+              ['profile', 'Profile Settings'],
+              ['billing', 'Billing Information'],
+              ['integrations', 'Integrations'],
+              ['notifications', 'Notifications'],
+            ])}
+          </cap-scroll-content>
+        </cap-scroll>
       `;
     case 'sheet-with-keyboard':
       return `
@@ -573,6 +646,51 @@ function renderSheetBody(usecase: Usecase, index: number, child: boolean): strin
         ${close}
       `;
   }
+}
+
+function renderContacts(): string {
+  return [
+    ['one', 'Emma Schmidt', 'Blue Horizon'],
+    ['two', 'Liam Muller', 'Evergreen Solutions'],
+    ['three', 'Olivia Dupont', 'Nova Ventures'],
+    ['four', 'Noah Garcia', 'Bridges Collective'],
+    ['five', 'Ava Rossi', 'Vivid Ideas'],
+    ['six', 'Sophia Ivanova', 'Rise Solutions'],
+    ['seven', 'Mia Laurent', 'Northline Studio'],
+    ['eight', 'Leo Park', 'Atlas Workshop'],
+  ]
+    .map(
+      ([tone, name, company]) => `
+        <article class="demo-contact-row">
+          <span class="demo-contact-avatar demo-contact-avatar--${tone}" aria-hidden="true"></span>
+          <span class="demo-contact-copy">
+            <strong>${name}</strong>
+            <small>${company}</small>
+          </span>
+        </article>
+      `,
+    )
+    .join('');
+}
+
+function renderSidebarGroup(title: string, items: [string, string][]): string {
+  return `
+    <section class="demo-sidebar-group">
+      <h3>${escapeHtml(title)}</h3>
+      <ul>
+        ${items
+          .map(
+            ([icon, label]) => `
+              <li>
+                <span class="demo-sidebar-item-icon demo-sidebar-item-icon--${icon}" aria-hidden="true"></span>
+                <span>${escapeHtml(label)}</span>
+              </li>
+            `,
+          )
+          .join('')}
+      </ul>
+    </section>
+  `;
 }
 
 function getSheetOptions(sheet: HTMLElement): SheetOptions {
