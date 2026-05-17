@@ -8,7 +8,6 @@
     "skipLibCheck": true,
     "experimentalDecorators": true,
     "useDefineForClassFields": false,
-    "baseUrl": ".",
     "paths": {
       "@capgo/capacitor-sheets": ["../../src/index.ts"],
       "@capgo/capacitor-sheets/angular": ["../../src/angular/index.ts"]
