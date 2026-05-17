@@ -1,3 +1,4 @@
+import { setupSheet } from '@capgo/capacitor-sheets/solid';
 import type {
   SheetActiveDetentChangeEvent,
   SheetOptions as CapSheetOptions,
@@ -10,9 +11,6 @@ type SheetOptions = Partial<CapSheetOptions> & {
   onActiveDetentChange?: (event: SheetActiveDetentChangeEvent) => void;
   onTravel?: (event: SheetTravelEvent) => void;
 };
-type SetupSheet = (element: HTMLElement, options?: SheetOptions) => () => void;
-type FrameworkName = 'Angular' | 'React' | 'Solid' | 'Svelte' | 'Vue';
-
 const DETACHED_CENTER_QUERY = '(min-width: 43.75rem)';
 
 interface Usecase {
@@ -205,17 +203,14 @@ const usecases: Usecase[] = [
   },
 ];
 
-export function mountUsecaseGallery(
-  host: HTMLElement,
-  options: { framework: FrameworkName; setupSheet: SetupSheet },
-): () => void {
-  host.innerHTML = renderGallery(options.framework);
+export function mountUsecaseGallery(host: HTMLElement): () => void {
+  host.innerHTML = renderGallery('Solid');
 
   const cleanups: (() => void)[] = [];
   for (const sheet of Array.from(host.querySelectorAll<HTMLElement>('cap-sheet[data-demo-sheet]'))) {
     const usecase = findUsecase(sheet.dataset.demoUsecase || '');
     const placementCleanup = setupResponsiveDemoPlacement(sheet, usecase);
-    cleanups.push(options.setupSheet(sheet, getSheetOptions(sheet)));
+    cleanups.push(setupSheet(sheet, getSheetOptions(sheet)));
     cleanups.push(placementCleanup);
   }
 
@@ -247,7 +242,7 @@ export function mountUsecaseGallery(
   };
 }
 
-function renderGallery(framework: FrameworkName): string {
+function renderGallery(framework: string): string {
   const depthUsecaseIndex = usecases.findIndex((usecase) => usecase.slug === 'sheet-with-depth');
   const depthUsecase = depthUsecaseIndex >= 0 ? usecases[depthUsecaseIndex] : undefined;
   const depthOutletFor = depthUsecase ? ` for="${getSheetId(depthUsecase, depthUsecaseIndex)}"` : '';

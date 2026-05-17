@@ -1,17 +1,14 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
-import { setupSheet } from '@capgo/capacitor-sheets/vue'
-import { mountUsecaseGallery } from '../../shared/usecase-gallery'
+
+import { mountUsecaseGallery } from './usecase-gallery'
 
 const galleryRef = ref<HTMLElement | null>(null)
 let cleanup: (() => void) | undefined
 
 onMounted(() => {
   if (galleryRef.value) {
-    cleanup = mountUsecaseGallery(galleryRef.value, {
-      framework: 'Vue',
-      setupSheet,
-    })
+    cleanup = mountUsecaseGallery(galleryRef.value)
   }
 })
 

@@ -1,16 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { setupSheet } from '@capgo/capacitor-sheets/svelte'
-  import { mountUsecaseGallery } from '../../shared/usecase-gallery'
+
+  import { mountUsecaseGallery } from './usecase-gallery'
 
   let gallery: HTMLDivElement
 
-  onMount(() =>
-    mountUsecaseGallery(gallery, {
-      framework: 'Svelte',
-      setupSheet,
-    }),
-  )
+  onMount(() => mountUsecaseGallery(gallery))
 </script>
 
 <div bind:this={gallery}></div>

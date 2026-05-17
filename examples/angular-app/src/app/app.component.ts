@@ -1,8 +1,7 @@
 import type { AfterViewInit, ElementRef, OnDestroy } from '@angular/core';
 import { Component, CUSTOM_ELEMENTS_SCHEMA, ViewChild } from '@angular/core';
-import { setupSheet } from '@capgo/capacitor-sheets/angular';
 
-import { mountUsecaseGallery } from '../../../shared/usecase-gallery';
+import { mountUsecaseGallery } from './usecase-gallery';
 
 @Component({
   selector: 'app-root',
@@ -16,10 +15,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     if (this.gallery?.nativeElement) {
-      this.cleanup = mountUsecaseGallery(this.gallery.nativeElement, {
-        framework: 'Angular',
-        setupSheet,
-      });
+      this.cleanup = mountUsecaseGallery(this.gallery.nativeElement);
     }
   }
 
