@@ -7,7 +7,15 @@ const source = (path: string): string => fileURLToPath(new URL(`../../src/${path
 
 export default defineConfig({
   root,
-  plugins: [vue()],
+  plugins: [
+    vue({
+      template: {
+        compilerOptions: {
+          isCustomElement: (tag) => tag.startsWith('cap-'),
+        },
+      },
+    }),
+  ],
   resolve: {
     alias: {
       '@capgo/capacitor-sheets/vue': source('vue/index.ts'),

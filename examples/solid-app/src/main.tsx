@@ -1,19 +1,11 @@
-import { onCleanup, onMount } from 'solid-js';
 import { render } from 'solid-js/web';
 
 import '@capgo/capacitor-sheets';
 import './styles.css';
-import { mountUsecaseGallery } from './usecase-gallery';
+import { UsecaseGallery } from './UsecaseGallery';
 
 function App() {
-  let galleryEl!: HTMLDivElement;
-
-  onMount(() => {
-    const cleanup = mountUsecaseGallery(galleryEl);
-    onCleanup(cleanup);
-  });
-
-  return <div ref={galleryEl} />;
+  return <UsecaseGallery />;
 }
 
 const root = document.getElementById('root');
