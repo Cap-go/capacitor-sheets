@@ -41,6 +41,9 @@
     "dist",
     "docs"
   ],
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
