@@ -127,6 +127,7 @@ Each framework example opens the same 16-usecase gallery, so StackBlitz is usefu
 ## Mobile Test App
 
 The repo includes a Capacitor app that wraps the React gallery so the sheets can be tested on real iOS and Android devices. The app id is `app.capgo.capacitor.sheets`.
+Capacitor 8 requires Node.js 22 or newer for local mobile commands.
 
 ```bash
 npm run build:mobile

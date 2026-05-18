@@ -31,6 +31,10 @@ jobs:
             echo "Error: Tag ${{ github.event.inputs.tag }} does not exist."
             exit 1
           fi
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
       - name: Setup bun
         uses: oven-sh/setup-bun@v2
         with:
