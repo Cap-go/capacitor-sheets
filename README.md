@@ -124,6 +124,26 @@ Each framework example opens the same 16-usecase gallery, so StackBlitz is usefu
 - [Svelte playground](https://stackblitz.com/github/Cap-go/capacitor-sheets?file=examples/svelte-app/src/App.svelte&startScript=stackblitz-svelte)
 - [Solid playground](https://stackblitz.com/github/Cap-go/capacitor-sheets?file=examples/solid-app/src/main.tsx&startScript=stackblitz-solid)
 
+## Mobile Test App
+
+The repo includes a Capacitor app that wraps the React gallery so the sheets can be tested on real iOS and Android devices. The app id is `app.capgo.capacitor.sheets`.
+
+```bash
+npm run build:mobile
+npx cap run ios
+npx cap run android
+```
+
+Capgo OTA uploads use the same built gallery:
+
+```bash
+npx @capgo/cli@latest app add app.capgo.capacitor.sheets --name "Capgo Sheets"
+npm run deploy:capgo:dev
+npm run deploy:capgo
+```
+
+Create the Capgo app once before the first upload. GitHub Actions also include a Capgo deploy workflow. Tag builds deploy to `production`, alpha tags deploy to `dev`, and manual runs can choose either channel. Set `CAPGO_TOKEN` in repository secrets before running it.
+
 ## Features
 
 - **Framework agnostic** custom elements: no React runtime dependency in the core package.

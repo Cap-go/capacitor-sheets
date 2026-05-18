@@ -15,7 +15,7 @@ const compat = new FlatCompat({
 
 export default [
   {
-    ignores: ['node_modules/**', 'dist/**', 'examples/**'],
+    ignores: ['node_modules/**', 'dist/**', 'examples/**', 'ios/**', 'android/**'],
   },
   ...compat.extends('@ionic/eslint-config/recommended'),
   {
