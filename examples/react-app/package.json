@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/core": "^8.3.4",
+    "@capgo/capacitor-updater": "^8.46.1",
     "@vitejs/plugin-react": "^6.0.2",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",

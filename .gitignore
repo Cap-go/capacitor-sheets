@@ -1,3 +1,8 @@
 node_modules/
 dist/
 .DS_Store
+.capgo
+.capgo_key
+.capgo_key.pub
+.capgo_key_v2
+.capgo_key_v2.pub
