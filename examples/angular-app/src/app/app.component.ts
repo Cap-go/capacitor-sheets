@@ -72,7 +72,9 @@ const DETACHED_CENTER_QUERY = '(min-width: 43.75rem)';
                     <cap-sheet-backdrop></cap-sheet-backdrop>
                   }
                   <cap-sheet-content [class]="sheetClass(entry.usecase)">
-                    <cap-sheet-bleeding-background></cap-sheet-bleeding-background>
+                    @if (shouldRenderBleedingBackground(entry.usecase)) {
+                      <cap-sheet-bleeding-background></cap-sheet-bleeding-background>
+                    }
                     @if (hasHandle(entry.usecase)) {
                       <cap-sheet-handle></cap-sheet-handle>
                     }
@@ -182,7 +184,9 @@ const DETACHED_CENTER_QUERY = '(min-width: 43.75rem)';
                 <cap-sheet-backdrop></cap-sheet-backdrop>
               }
               <cap-sheet-content [class]="sheetClass(usecase)">
-                <cap-sheet-bleeding-background></cap-sheet-bleeding-background>
+                @if (shouldRenderBleedingBackground(usecase)) {
+                  <cap-sheet-bleeding-background></cap-sheet-bleeding-background>
+                }
                 @if (hasHandle(usecase)) {
                   <cap-sheet-handle></cap-sheet-handle>
                 }
@@ -535,8 +539,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       summary: 'A full-height story page that scrolls inside the sheet.',
       placement: 'bottom',
       detents: ['100dvh'],
-      handle: false,
       sheetClass: 'demo-sheet--long',
+      options: { safeArea: 'none' },
     },
     {
       slug: 'sheet-with-detent',
@@ -545,7 +549,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       placement: 'bottom',
       detents: ['35em'],
       sheetClass: 'demo-sheet--detents',
-      options: { defaultActiveDetent: 1 },
+      options: { defaultActiveDetent: 1, safeArea: 'none' },
     },
     {
       slug: 'sidebar',
@@ -555,6 +559,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       detents: ['20.25em'],
       handle: false,
       sheetClass: 'demo-sheet--side',
+      options: { safeArea: 'none' },
     },
     {
       slug: 'bottom-sheet',
@@ -563,6 +568,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       placement: 'bottom',
       detents: ['18em', '32em'],
       sheetClass: 'demo-sheet--bottom',
+      options: { safeArea: 'none' },
     },
     {
       slug: 'sheet-with-keyboard',
@@ -571,7 +577,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       placement: 'bottom',
       detents: ['24em', '38em'],
       sheetClass: 'demo-sheet--form',
-      options: { nativeFocusScrollPrevention: true },
+      options: { nativeFocusScrollPrevention: true, safeArea: 'none' },
     },
     {
       slug: 'toast',
@@ -606,6 +612,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       placement: 'bottom',
       detents: ['100dvh'],
       sheetClass: 'demo-sheet--page',
+      options: { safeArea: 'none' },
     },
     {
       slug: 'top-sheet',
@@ -615,6 +622,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       detents: ['42em'],
       handle: false,
       sheetClass: 'demo-sheet--top',
+      options: { safeArea: 'none' },
     },
     {
       slug: 'sheet-with-stacking',
@@ -623,7 +631,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       placement: 'bottom',
       detents: ['20em', '32em'],
       sheetClass: 'demo-sheet--stack-parent',
-      options: { defaultActiveDetent: 2 },
+      options: { defaultActiveDetent: 2, safeArea: 'none' },
       child: {
         slug: 'sheet-with-stacking-child',
         title: 'Stacked Details',
@@ -631,7 +639,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         placement: 'bottom',
         detents: ['18em', '28em'],
         sheetClass: 'demo-sheet--stacked',
-        options: { defaultActiveDetent: 2 },
+        options: { defaultActiveDetent: 2, safeArea: 'none' },
       },
     },
     {
@@ -642,7 +650,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       detents: ['28em', '46em'],
       sheetClass: 'demo-sheet--depth',
       outlet: 'depth',
-      options: { defaultActiveDetent: 2 },
+      options: { defaultActiveDetent: 2, safeArea: 'none' },
     },
     {
       slug: 'parallax-page',
@@ -652,6 +660,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       detents: ['18em', '36em'],
       sheetClass: 'demo-sheet--parallax',
       outlet: 'parallax',
+      options: { safeArea: 'none' },
     },
     {
       slug: 'page',
@@ -660,6 +669,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       placement: 'right',
       detents: ['100dvw'],
       sheetClass: 'demo-sheet--page demo-sheet--right-page',
+      options: { safeArea: 'none' },
     },
     {
       slug: 'lightbox',
@@ -668,6 +678,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       placement: 'center',
       handle: false,
       sheetClass: 'demo-sheet--lightbox',
+      options: { safeArea: 'none' },
       child: {
         slug: 'lightbox-comments',
         title: 'Comments',
@@ -676,7 +687,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         detents: ['60dvh', '100dvh'],
         handle: false,
         sheetClass: 'demo-sheet--lightbox-comments',
-        options: { defaultActiveDetent: 1 },
+        options: { defaultActiveDetent: 1, safeArea: 'none' },
       },
     },
     {
@@ -692,6 +703,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         inertOutside: false,
         closeOnOutsideClick: false,
         focusTrap: false,
+        safeArea: 'none',
         swipeDismissal: false,
       },
     },
@@ -836,6 +848,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     return usecase.handle !== false && usecase.placement !== 'center';
   }
 
+  shouldRenderBleedingBackground(usecase: Usecase): boolean {
+    return usecase.placement !== 'center' && usecase.slug !== 'detached-sheet' && usecase.slug !== 'toast';
+  }
+
   resolvedPlacement(usecase: Usecase): SheetPlacement {
     return usecase.slug === 'detached-sheet' && this.detachedCentered ? 'center' : usecase.placement;
   }
@@ -907,12 +923,12 @@ export class AppComponent implements AfterViewInit, OnDestroy {
           type === 'depth'
             ? {
                 transform: ({ progress }: { progress: number }) =>
-                  `translate3d(0, ${progress * 0.75}rem, 0) scale(${1 - progress * 0.09})`,
+                  `translate3d(0, ${progress * 1.25}rem, 0) scale(${1 - progress * 0.14})`,
                 filter: ({ progress }: { progress: number }) =>
-                  `saturate(${1 - progress * 0.18}) brightness(${1 - progress * 0.05})`,
-                'border-radius': ({ progress }: { progress: number }) => `${progress * 1.5}rem`,
+                  `saturate(${1 - progress * 0.32}) brightness(${1 - progress * 0.1})`,
+                'border-radius': ({ progress }: { progress: number }) => `${progress * 2}rem`,
                 'box-shadow': ({ progress }: { progress: number }) =>
-                  progress > 0.01 ? `0 ${progress * 1.25}rem ${progress * 3.5}rem rgb(20 23 22 / 0.2)` : 'none',
+                  progress > 0.01 ? `0 ${progress * 1.75}rem ${progress * 5}rem rgb(20 23 22 / 0.24)` : 'none',
               }
             : { '--demo-parallax-progress': ({ progress }: { progress: number }) => String(progress) },
       });

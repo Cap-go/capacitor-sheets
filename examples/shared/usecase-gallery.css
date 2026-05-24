@@ -248,8 +248,8 @@ cap-sheet-trigger.demo-icon-button:hover {
 .demo-card-art--parallax {
   --demo-parallax-progress: 0;
   background-position:
-    calc(var(--demo-parallax-progress) * -2em) 0,
-    0 calc(var(--demo-parallax-progress) * -2em),
+    calc(var(--demo-parallax-progress) * -5em) 0,
+    0 calc(var(--demo-parallax-progress) * -4em),
     0 0;
 }
 
@@ -287,12 +287,18 @@ cap-sheet-content.demo-sheet-content cap-sheet-handle:focus-visible::before {
 }
 
 cap-sheet-content.demo-sheet--long {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   width: min(100%, 35rem);
   height: calc(100dvh - 0.75rem);
   max-height: calc(100% - 0.75rem);
   padding: 0;
   border-radius: 1.5rem 1.5rem 0 0;
   overflow: hidden;
+}
+
+cap-sheet-content.demo-sheet--long cap-sheet-handle {
+  background: #fff;
 }
 
 cap-sheet-content.demo-sheet--detents {
@@ -387,6 +393,7 @@ cap-sheet-content.demo-sheet--form {
 .demo-long-story {
   display: block;
   height: 100%;
+  min-height: 0;
 }
 
 .demo-long-story article {
@@ -956,6 +963,7 @@ cap-sheet-content.demo-sheet--persistent {
   margin-block-end: 0;
   border-radius: 1.5rem 1.5rem 0 0;
   padding: 0 1rem calc(0.75rem + env(safe-area-inset-bottom, 0em));
+  overflow: hidden;
 }
 
 cap-sheet-content.demo-sheet--top {
@@ -963,7 +971,7 @@ cap-sheet-content.demo-sheet--top {
   height: min(100%, 42em);
   border-radius: 0 0 1.5rem 1.5rem;
   padding: calc(1rem + env(safe-area-inset-top, 0em)) clamp(1.25rem, 4vw, 1.75rem) 1.5rem;
-  box-shadow: 0 1.25rem 3rem rgb(20 23 22 / 0.16);
+  --cap-sheet-shadow: 0 1.25rem 3rem rgb(20 23 22 / 0.16);
 }
 
 .demo-top-sheet {

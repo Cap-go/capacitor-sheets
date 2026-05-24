@@ -47,8 +47,26 @@ export class CapSheetContent extends SheetPartElement {
 
 /** Decorative background that can extend beyond rounded sheet corners. */
 export class CapSheetBleedingBackground extends HTMLElement {
+  private bleedingParent: HTMLElement | null = null;
+
   connectedCallback(): void {
     injectCapSheetStyles(this.ownerDocument);
+    this.setAttribute('aria-hidden', 'true');
+    this.bleedingParent = this.parentElement instanceof HTMLElement ? this.parentElement : null;
+    this.updateParentBleedAttribute(this.bleedingParent);
+  }
+
+  disconnectedCallback(): void {
+    this.updateParentBleedAttribute(this.bleedingParent);
+    this.bleedingParent = null;
+  }
+
+  private updateParentBleedAttribute(parent: HTMLElement | null): void {
+    if (!parent) return;
+    parent.toggleAttribute(
+      'data-cap-sheet-bleeds',
+      Boolean(parent.querySelector(':scope > cap-sheet-bleeding-background')),
+    );
   }
 }
 
