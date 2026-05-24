@@ -48,8 +48,8 @@ const usecases: Usecase[] = [
     summary: 'A full-height story page that scrolls inside the sheet.',
     placement: 'bottom',
     detents: ['100dvh'],
-    handle: false,
     sheetClass: 'demo-sheet--long',
+    options: { safeArea: 'none' },
   },
   {
     slug: 'sheet-with-detent',
@@ -58,7 +58,7 @@ const usecases: Usecase[] = [
     placement: 'bottom',
     detents: ['35em'],
     sheetClass: 'demo-sheet--detents',
-    options: { defaultActiveDetent: 1 },
+    options: { defaultActiveDetent: 1, safeArea: 'none' },
   },
   {
     slug: 'sidebar',
@@ -68,6 +68,7 @@ const usecases: Usecase[] = [
     detents: ['20.25em'],
     handle: false,
     sheetClass: 'demo-sheet--side',
+    options: { safeArea: 'none' },
   },
   {
     slug: 'bottom-sheet',
@@ -76,6 +77,7 @@ const usecases: Usecase[] = [
     placement: 'bottom',
     detents: ['18em', '32em'],
     sheetClass: 'demo-sheet--bottom',
+    options: { safeArea: 'none' },
   },
   {
     slug: 'sheet-with-keyboard',
@@ -84,7 +86,7 @@ const usecases: Usecase[] = [
     placement: 'bottom',
     detents: ['24em', '38em'],
     sheetClass: 'demo-sheet--form',
-    options: { nativeFocusScrollPrevention: true },
+    options: { nativeFocusScrollPrevention: true, safeArea: 'none' },
   },
   {
     slug: 'toast',
@@ -119,6 +121,7 @@ const usecases: Usecase[] = [
     placement: 'bottom',
     detents: ['100dvh'],
     sheetClass: 'demo-sheet--page',
+    options: { safeArea: 'none' },
   },
   {
     slug: 'top-sheet',
@@ -128,6 +131,7 @@ const usecases: Usecase[] = [
     detents: ['42em'],
     handle: false,
     sheetClass: 'demo-sheet--top',
+    options: { safeArea: 'none' },
   },
   {
     slug: 'sheet-with-stacking',
@@ -136,7 +140,7 @@ const usecases: Usecase[] = [
     placement: 'bottom',
     detents: ['20em', '32em'],
     sheetClass: 'demo-sheet--stack-parent',
-    options: { defaultActiveDetent: 2 },
+    options: { defaultActiveDetent: 2, safeArea: 'none' },
     child: {
       slug: 'sheet-with-stacking-child',
       title: 'Stacked Details',
@@ -144,7 +148,7 @@ const usecases: Usecase[] = [
       placement: 'bottom',
       detents: ['18em', '28em'],
       sheetClass: 'demo-sheet--stacked',
-      options: { defaultActiveDetent: 2 },
+      options: { defaultActiveDetent: 2, safeArea: 'none' },
     },
   },
   {
@@ -155,7 +159,7 @@ const usecases: Usecase[] = [
     detents: ['28em', '46em'],
     sheetClass: 'demo-sheet--depth',
     outlet: 'depth',
-    options: { defaultActiveDetent: 2 },
+    options: { defaultActiveDetent: 2, safeArea: 'none' },
   },
   {
     slug: 'parallax-page',
@@ -165,6 +169,7 @@ const usecases: Usecase[] = [
     detents: ['18em', '36em'],
     sheetClass: 'demo-sheet--parallax',
     outlet: 'parallax',
+    options: { safeArea: 'none' },
   },
   {
     slug: 'page',
@@ -173,6 +178,7 @@ const usecases: Usecase[] = [
     placement: 'right',
     detents: ['100dvw'],
     sheetClass: 'demo-sheet--page demo-sheet--right-page',
+    options: { safeArea: 'none' },
   },
   {
     slug: 'lightbox',
@@ -181,6 +187,7 @@ const usecases: Usecase[] = [
     placement: 'center',
     handle: false,
     sheetClass: 'demo-sheet--lightbox',
+    options: { safeArea: 'none' },
     child: {
       slug: 'lightbox-comments',
       title: 'Comments',
@@ -189,7 +196,7 @@ const usecases: Usecase[] = [
       detents: ['60dvh', '100dvh'],
       handle: false,
       sheetClass: 'demo-sheet--lightbox-comments',
-      options: { defaultActiveDetent: 1 },
+      options: { defaultActiveDetent: 1, safeArea: 'none' },
     },
   },
   {
@@ -205,6 +212,7 @@ const usecases: Usecase[] = [
       inertOutside: false,
       closeOnOutsideClick: false,
       focusTrap: false,
+      safeArea: 'none',
       swipeDismissal: false,
     },
   },
@@ -270,12 +278,12 @@ function setTravelOutlet(element: Element | ComponentPublicInstance | null, type
       type === 'depth'
         ? {
             transform: ({ progress }: { progress: number }) =>
-              `translate3d(0, ${progress * 0.75}rem, 0) scale(${1 - progress * 0.09})`,
+              `translate3d(0, ${progress * 1.25}rem, 0) scale(${1 - progress * 0.14})`,
             filter: ({ progress }: { progress: number }) =>
-              `saturate(${1 - progress * 0.18}) brightness(${1 - progress * 0.05})`,
-            'border-radius': ({ progress }: { progress: number }) => `${progress * 1.5}rem`,
+              `saturate(${1 - progress * 0.32}) brightness(${1 - progress * 0.1})`,
+            'border-radius': ({ progress }: { progress: number }) => `${progress * 2}rem`,
             'box-shadow': ({ progress }: { progress: number }) =>
-              progress > 0.01 ? `0 ${progress * 1.25}rem ${progress * 3.5}rem rgb(20 23 22 / 0.2)` : 'none',
+              progress > 0.01 ? `0 ${progress * 1.75}rem ${progress * 5}rem rgb(20 23 22 / 0.24)` : 'none',
           }
         : { '--demo-parallax-progress': ({ progress }: { progress: number }) => String(progress) },
   });
@@ -332,6 +340,10 @@ function sheetEntries(usecase: Usecase, index: number): SheetEntry[] {
 
 function hasHandle(usecase: Usecase): boolean {
   return usecase.handle !== false && usecase.placement !== 'center';
+}
+
+function shouldRenderBleedingBackground(usecase: Usecase): boolean {
+  return usecase.placement !== 'center' && usecase.slug !== 'detached-sheet' && usecase.slug !== 'toast';
 }
 
 function resolvedPlacement(usecase: Usecase): SheetPlacement {
@@ -411,7 +423,9 @@ function booleanAttributes(options?: SheetOptions): Record<string, string> {
           <cap-sheet-view :content-placement="resolvedPlacement(entry.usecase)">
             <cap-sheet-backdrop v-if="entry.usecase.backdrop !== false"></cap-sheet-backdrop>
             <cap-sheet-content :class="sheetClass(entry.usecase)">
-              <cap-sheet-bleeding-background></cap-sheet-bleeding-background>
+              <cap-sheet-bleeding-background
+                v-if="shouldRenderBleedingBackground(entry.usecase)"
+              ></cap-sheet-bleeding-background>
               <cap-sheet-handle v-if="hasHandle(entry.usecase)"></cap-sheet-handle>
               <SheetBody :usecase="entry.usecase" :index="entry.index" :child="entry.child" />
             </cap-sheet-content>
@@ -436,7 +450,9 @@ function booleanAttributes(options?: SheetOptions): Record<string, string> {
         <cap-sheet-view :content-placement="resolvedPlacement(usecase)">
           <cap-sheet-backdrop v-if="usecase.backdrop !== false"></cap-sheet-backdrop>
           <cap-sheet-content :class="sheetClass(usecase)">
-            <cap-sheet-bleeding-background></cap-sheet-bleeding-background>
+            <cap-sheet-bleeding-background
+              v-if="shouldRenderBleedingBackground(usecase)"
+            ></cap-sheet-bleeding-background>
             <cap-sheet-handle v-if="hasHandle(usecase)"></cap-sheet-handle>
             <SheetBody :usecase="usecase" :index="index" />
           </cap-sheet-content>

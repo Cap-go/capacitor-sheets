@@ -102,7 +102,7 @@ cap-sheet-content {
   color: CanvasText;
   background: var(--cap-sheet-surface);
   border-radius: var(--cap-sheet-radius) var(--cap-sheet-radius) 0 0;
-  box-shadow: var(--cap-sheet-shadow);
+  box-shadow: var(--cap-sheet-shadow), var(--cap-sheet-edge-bleed-shadow, 0 0 0 0 transparent);
   overflow: auto;
   overscroll-behavior: contain;
   pointer-events: auto;
@@ -136,30 +136,24 @@ cap-sheet-view[content-placement="center"] cap-sheet-content {
 }
 
 cap-sheet-bleeding-background {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  display: block;
-  background: var(--cap-sheet-surface);
-  border-radius: inherit;
-  pointer-events: none;
+  display: none;
 }
 
-cap-sheet-view[content-placement="bottom"] cap-sheet-bleeding-background,
-cap-sheet-view:not([content-placement]) cap-sheet-bleeding-background {
-  inset-block-end: -8em;
+cap-sheet-view[content-placement="bottom"] cap-sheet-content[data-cap-sheet-bleeds],
+cap-sheet-view:not([content-placement]) cap-sheet-content[data-cap-sheet-bleeds] {
+  --cap-sheet-edge-bleed-shadow: 0 8em 0 0 var(--cap-sheet-surface);
 }
 
-cap-sheet-view[content-placement="top"] cap-sheet-bleeding-background {
-  inset-block-start: -8em;
+cap-sheet-view[content-placement="top"] cap-sheet-content[data-cap-sheet-bleeds] {
+  --cap-sheet-edge-bleed-shadow: 0 -8em 0 0 var(--cap-sheet-surface);
 }
 
-cap-sheet-view[content-placement="left"] cap-sheet-bleeding-background {
-  inset-inline-start: -8em;
+cap-sheet-view[content-placement="left"] cap-sheet-content[data-cap-sheet-bleeds] {
+  --cap-sheet-edge-bleed-shadow: -8em 0 0 0 var(--cap-sheet-surface);
 }
 
-cap-sheet-view[content-placement="right"] cap-sheet-bleeding-background {
-  inset-inline-end: -8em;
+cap-sheet-view[content-placement="right"] cap-sheet-content[data-cap-sheet-bleeds] {
+  --cap-sheet-edge-bleed-shadow: 8em 0 0 0 var(--cap-sheet-surface);
 }
 
 cap-sheet-handle {
