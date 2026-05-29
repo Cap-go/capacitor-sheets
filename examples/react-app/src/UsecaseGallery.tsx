@@ -278,8 +278,11 @@ export function UsecaseGallery() {
       <TravelOutlet for={depthOutletFor} className="demo-depth-stage" type="depth">
         <main className="demo-app">
           <header className="demo-hero">
-            <div>
-              <p className="demo-kicker">React playground</p>
+            <div className="demo-hero-copy">
+              <div className="demo-brand">
+                <img className="demo-logo" src="/capgo-sheets-logo.svg" alt="" />
+                <p className="demo-kicker">React playground</p>
+              </div>
               <h1>Capgo Sheets usecases</h1>
               <p>Open every sheet pattern from the real preview viewport. No fake phone frame, no clipped overlay.</p>
             </div>

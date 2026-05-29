@@ -482,8 +482,11 @@ const DETACHED_CENTER_QUERY = '(min-width: 43.75rem)';
     <cap-sheet-outlet #travelOutlet [attr.for]="depthOutletFor" data-travel-type="depth" class="demo-depth-stage">
       <main class="demo-app">
         <header class="demo-hero">
-          <div>
-            <p class="demo-kicker">Angular playground</p>
+          <div class="demo-hero-copy">
+            <div class="demo-brand">
+              <img class="demo-logo" src="/capgo-sheets-logo.svg" alt="" />
+              <p class="demo-kicker">Angular playground</p>
+            </div>
             <h1>Capgo Sheets usecases</h1>
             <p>Open every sheet pattern from the real preview viewport. No fake phone frame, no clipped overlay.</p>
           </div>
