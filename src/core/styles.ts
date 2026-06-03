@@ -2,7 +2,7 @@ const STYLE_ID = 'capgo-capacitor-sheets-styles';
 
 const CSS = `
 :root {
-  --cap-sheet-100-lvh-dvh-pct: max(100%, 100vh);
+  --cap-sheet-100-lvh-dvh-pct: 100%;
   --cap-sheet-backdrop-color: rgb(0 0 0);
   --cap-sheet-backdrop-opacity: 0.44;
   --cap-sheet-radius: 1.5em;
@@ -22,7 +22,7 @@ const CSS = `
 
 @supports (height: 1dvh) {
   :root {
-    --cap-sheet-100-lvh-dvh-pct: max(100dvh, 100lvh);
+    --cap-sheet-100-lvh-dvh-pct: 100dvh;
   }
 }
 
