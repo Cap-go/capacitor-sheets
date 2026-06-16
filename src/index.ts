@@ -66,6 +66,8 @@ export type {
   SheetActiveDetentChangeEvent,
   SheetAnimationPreset,
   SheetAnimationSettings,
+  SheetContainerOffset,
+  SheetInsetValue,
   SheetEasing,
   SheetOptions,
   SheetPlacement,
