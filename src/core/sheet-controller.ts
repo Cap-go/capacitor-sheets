@@ -223,6 +223,8 @@ export class SheetController {
   private lockedScroll = false;
   private previousBodyOverflow = '';
   private previousBodyTouchAction = '';
+  private previousDocumentElementOverflow = '';
+  private previousDocumentElementTouchAction = '';
   private inertedElements = new Map<HTMLElement, { inert: boolean; ariaHidden: string | null }>();
   private previousFocus: Element | null = null;
   private hasThemeDimmer = false;
@@ -236,13 +238,23 @@ export class SheetController {
     const visualViewport = this.root.ownerDocument.defaultView?.visualViewport;
     if (!view) return;
     if (!visualViewport || this.options.nativeFocusScrollPrevention === false) {
-      view.style.setProperty('--cap-sheet-keyboard-offset', '0em');
+      this.setKeyboardOffset('0em');
       return;
     }
 
     const layoutHeight = this.root.ownerDocument.documentElement.clientHeight;
     const keyboardOffset = Math.max(0, layoutHeight - visualViewport.height - visualViewport.offsetTop);
-    view.style.setProperty('--cap-sheet-keyboard-offset', `${toEm(view, keyboardOffset)}em`);
+    this.setKeyboardOffset(`${toEm(view, keyboardOffset)}em`);
+  };
+
+  private readonly handleFocusIn = (event: FocusEvent): void => {
+    if (!this.presented || this.options.nativeFocusScrollPrevention === false) return;
+    const target = event.target;
+    const content = this.parts.content;
+    if (!(target instanceof HTMLElement) || !content?.contains(target)) return;
+    if (!['input', 'select', 'textarea'].includes(target.localName) && !target.isContentEditable) return;
+
+    requestAnimationFrame(() => target.scrollIntoView({ block: 'nearest', inline: 'nearest' }));
   };
 
   private readonly handleDocumentKeyDown = (event: KeyboardEvent): void => {
@@ -865,6 +877,7 @@ export class SheetController {
     view.addEventListener('pointermove', this.handlePointerMove, { passive: false });
     view.addEventListener('pointerup', this.handlePointerUp);
     view.addEventListener('pointercancel', this.handlePointerUp);
+    view.addEventListener('focusin', this.handleFocusIn);
     view.addEventListener('wheel', this.handleWheel, { passive: false });
     this.viewListenersElement = view;
   }
@@ -878,6 +891,7 @@ export class SheetController {
     view.removeEventListener('pointermove', this.handlePointerMove);
     view.removeEventListener('pointerup', this.handlePointerUp);
     view.removeEventListener('pointercancel', this.handlePointerUp);
+    view.removeEventListener('focusin', this.handleFocusIn);
     view.removeEventListener('wheel', this.handleWheel);
     this.viewListenersElement = null;
   }
@@ -970,9 +984,14 @@ export class SheetController {
 
   private lockPage(): void {
     if (this.lockedScroll) return;
+    const documentElement = this.root.ownerDocument.documentElement;
     const body = this.root.ownerDocument.body;
+    this.previousDocumentElementOverflow = documentElement.style.overflow;
+    this.previousDocumentElementTouchAction = documentElement.style.touchAction;
     this.previousBodyOverflow = body.style.overflow;
     this.previousBodyTouchAction = body.style.touchAction;
+    documentElement.style.overflow = 'hidden';
+    documentElement.style.touchAction = 'none';
     body.dataset.capSheetScrollLocked = 'true';
     body.style.overflow = 'hidden';
     body.style.touchAction = 'none';
@@ -981,13 +1000,32 @@ export class SheetController {
 
   private unlockPage(): void {
     if (!this.lockedScroll) return;
+    const documentElement = this.root.ownerDocument.documentElement;
     const body = this.root.ownerDocument.body;
     delete body.dataset.capSheetScrollLocked;
+    documentElement.style.overflow = this.previousDocumentElementOverflow;
+    documentElement.style.touchAction = this.previousDocumentElementTouchAction;
     body.style.overflow = this.previousBodyOverflow;
     body.style.touchAction = this.previousBodyTouchAction;
+    this.previousDocumentElementOverflow = '';
+    this.previousDocumentElementTouchAction = '';
     this.previousBodyOverflow = '';
     this.previousBodyTouchAction = '';
     this.lockedScroll = false;
+  }
+
+  private setKeyboardOffset(value: string): void {
+    const view = this.parts.view;
+    if (!view || view.style.getPropertyValue('--cap-sheet-keyboard-offset') === value) return;
+
+    view.style.setProperty('--cap-sheet-keyboard-offset', value);
+    if (!this.presented) return;
+
+    requestAnimationFrame(() => {
+      if (!this.presented) return;
+      this.remeasure();
+      this.applyOffset(this.detentOffsetsPx[this.activeDetent] || 0, this.status);
+    });
   }
 
   private applyInert(): void {
