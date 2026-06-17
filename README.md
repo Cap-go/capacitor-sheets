@@ -210,11 +210,25 @@ Add `viewport-fit=cover` so iOS exposes safe-area insets to CSS:
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 ```
 
-Safe areas are enabled by default. `cap-sheet-view` reads standard `env(safe-area-inset-*)` values and Capacitor SystemBars fallback variables such as `--safe-area-inset-bottom`, then applies them to the sheet viewport in `em`-based layout. You can opt out or choose edges per sheet:
+Safe areas are enabled by default. In `auto`, edge-attached sheets protect the attached edge and side edges while leaving the opposite edge available for fullscreen detents. `cap-sheet-view` reads standard `env(safe-area-inset-*)` values and Capacitor SystemBars fallback variables such as `--safe-area-inset-bottom`, then applies them to the sheet viewport in `em`-based layout. You can opt out or choose edges per sheet:
 
 ```text
 <cap-sheet safe-area="none"></cap-sheet>
 <cap-sheet safe-area="bottom left right"></cap-sheet>
+```
+
+Detached sheets can use Gorhom-style container spacing without CSS margins. Use `detached` for full edge rounding, `top-inset` / `bottom-inset` / `left-inset` / `right-inset` for one-off offsets, or `containerOffset` from framework setup helpers for per-edge offsets:
+
+```html
+<cap-sheet detached bottom-inset="1rem" detents="18em" content-placement="bottom"></cap-sheet>
+```
+
+```ts
+setupSheet(sheet, {
+  detached: true,
+  bottomInset: '1rem',
+  containerOffset: { left: '1rem', right: '1rem' },
+});
 ```
 
 For Capacitor apps with overlay status/system bars, keep the platform plugins responsible for exposing correct insets:

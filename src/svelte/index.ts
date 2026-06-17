@@ -3,6 +3,8 @@ import '../components';
 import { applySheetOptions } from '../components/cap-sheet';
 import type {
   SheetActiveDetentChangeEvent,
+  SheetContainerOffset,
+  SheetInsetValue,
   SheetOptions,
   SheetPresentedChangeEvent,
   SheetSafeAreaEdge,
@@ -60,4 +62,6 @@ export type {
   SheetTravelEvent,
   SheetSafeAreaEdge,
   SheetSafeAreaMode,
+  SheetContainerOffset,
+  SheetInsetValue,
 };

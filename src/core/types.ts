@@ -8,7 +8,12 @@ export type SheetTrack = Exclude<SheetPlacement, 'center'>;
 export type SheetSafeAreaEdge = 'top' | 'bottom' | 'left' | 'right';
 
 /** Safe-area behavior for Capacitor WebViews and mobile browsers. */
-export type SheetSafeAreaMode = boolean | 'auto' | 'none' | SheetSafeAreaEdge[];
+export type SheetSafeAreaMode = boolean | 'auto' | 'all' | 'none' | SheetSafeAreaEdge[];
+/** CSS length or pixel number used for sheet container insets. */
+export type SheetInsetValue = string | number;
+
+/** Extra container offsets applied around the sheet viewport. */
+export type SheetContainerOffset = Partial<Record<SheetSafeAreaEdge, SheetInsetValue>>;
 
 /** Runtime travel state emitted by sheet lifecycle events. */
 export type SheetTravelStatus = 'idle' | 'entering' | 'exiting' | 'dragging' | 'settling';
@@ -83,6 +88,18 @@ export interface SheetOptions {
   contentPlacement?: SheetPlacement;
   /** Safe-area edges protected by the sheet viewport. Defaults to `auto`. */
   safeArea?: SheetSafeAreaMode;
+  /** Render as a floating sheet with detached edge rounding. */
+  detached?: boolean;
+  /** Extra top inset added to the sheet viewport, equivalent to Gorhom `topInset`. */
+  topInset?: SheetInsetValue;
+  /** Extra bottom inset added to the sheet viewport, equivalent to Gorhom `bottomInset`. */
+  bottomInset?: SheetInsetValue;
+  /** Extra left inset added to the sheet viewport. */
+  leftInset?: SheetInsetValue;
+  /** Extra right inset added to the sheet viewport. */
+  rightInset?: SheetInsetValue;
+  /** Extra per-edge container offsets, equivalent to Gorhom `containerOffset`. */
+  containerOffset?: SheetContainerOffset;
   /** Edge tracks that can dismiss the sheet. */
   tracks?: SheetTrack | SheetTrack[];
   /** Enables pointer, touch, trackpad, and wheel travel gestures. */

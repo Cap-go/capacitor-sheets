@@ -1,6 +1,6 @@
 import { readOptionsFromElement, SheetController } from '../core/sheet-controller';
 import { injectCapSheetStyles } from '../core/styles';
-import type { SheetAnimationSettings, SheetOptions } from '../core/types';
+import type { SheetAnimationSettings, SheetInsetValue, SheetOptions } from '../core/types';
 import { parseBoolean } from '../core/utils';
 
 const observed = [
@@ -11,12 +11,17 @@ const observed = [
   'default-active-detent',
   'default-presented',
   'detents',
+  'detached',
   'focus-trap',
   'inert-outside',
   'native-edge-swipe-prevention',
   'native-focus-scroll-prevention',
   'presented',
   'restore-focus',
+  'top-inset',
+  'bottom-inset',
+  'left-inset',
+  'right-inset',
   'safe-area',
   'sheet-role',
   'stack',
@@ -167,12 +172,17 @@ function readChangedOptionsFromElement(element: HTMLElement, name: string): Part
     'default-active-detent': ['defaultActiveDetent'],
     'default-presented': ['defaultPresented'],
     detents: ['detents'],
+    detached: ['detached'],
     'focus-trap': ['focusTrap'],
     'inert-outside': ['inertOutside'],
     'native-edge-swipe-prevention': ['nativeEdgeSwipePrevention'],
     'native-focus-scroll-prevention': ['nativeFocusScrollPrevention'],
     presented: ['presented'],
     'restore-focus': ['restoreFocus'],
+    'top-inset': ['topInset'],
+    'bottom-inset': ['bottomInset'],
+    'left-inset': ['leftInset'],
+    'right-inset': ['rightInset'],
     'safe-area': ['safeArea'],
     'sheet-role': ['sheetRole'],
     stack: ['stack'],
@@ -190,6 +200,21 @@ function readChangedOptionsFromElement(element: HTMLElement, name: string): Part
   return changed;
 }
 
+function formatInsetAttribute(value: SheetInsetValue): string | undefined {
+  if (typeof value === 'number') return Number.isFinite(value) ? `${value}px` : undefined;
+  const normalized = value.trim();
+  return normalized || undefined;
+}
+
+function combineInsetAttributes(...values: (SheetInsetValue | undefined)[]): string | undefined {
+  const parts = values.flatMap((value) => {
+    const attributeValue = value === undefined ? undefined : formatInsetAttribute(value);
+    return attributeValue ? [attributeValue] : [];
+  });
+  if (parts.length === 0) return undefined;
+  return parts.length === 1 ? parts[0] : `calc(${parts.join(' + ')})`;
+}
+
 export function applySheetOptions(element: HTMLElement, options: Partial<SheetOptions>): void {
   if (options.contentPlacement) element.setAttribute('content-placement', options.contentPlacement);
   if (options.detents !== undefined) {
@@ -201,7 +226,6 @@ export function applySheetOptions(element: HTMLElement, options: Partial<SheetOp
   }
   if (options.defaultPresented !== undefined)
     element.setAttribute('default-presented', String(options.defaultPresented));
-  if (options.presented !== undefined) element.toggleAttribute('presented', options.presented);
   if (options.sheetRole) element.setAttribute('sheet-role', options.sheetRole);
   if (options.safeArea !== undefined) {
     element.setAttribute(
@@ -212,7 +236,23 @@ export function applySheetOptions(element: HTMLElement, options: Partial<SheetOp
   if (options.stack) element.setAttribute('stack', options.stack);
   if (options.tracks)
     element.setAttribute('tracks', Array.isArray(options.tracks) ? options.tracks.join(' ') : options.tracks);
+  for (const [key, attr, edge] of [
+    ['topInset', 'top-inset', 'top'],
+    ['bottomInset', 'bottom-inset', 'bottom'],
+    ['leftInset', 'left-inset', 'left'],
+    ['rightInset', 'right-inset', 'right'],
+  ] as const) {
+    const hasEdgeInset = Object.prototype.hasOwnProperty.call(options, key);
+    const hasContainerOffset = Object.prototype.hasOwnProperty.call(options, 'containerOffset');
+    const attributeValue = combineInsetAttributes(options[key], options.containerOffset?.[edge]);
+    if (attributeValue !== undefined) {
+      element.setAttribute(attr, attributeValue);
+    } else if (hasEdgeInset || hasContainerOffset) {
+      element.removeAttribute(attr);
+    }
+  }
   for (const [key, attr] of [
+    ['detached', 'detached'],
     ['swipe', 'swipe'],
     ['swipeDismissal', 'swipe-dismissal'],
     ['swipeOvershoot', 'swipe-overshoot'],
@@ -231,6 +271,7 @@ export function applySheetOptions(element: HTMLElement, options: Partial<SheetOp
   if (options.themeColorDimming !== undefined) {
     element.setAttribute('theme-color-dimming', options.themeColorDimming === false ? 'false' : 'auto');
   }
+  if (options.presented !== undefined) element.toggleAttribute('presented', options.presented);
 }
 
 export function readPresentedAttribute(element: HTMLElement, fallback = false): boolean {
