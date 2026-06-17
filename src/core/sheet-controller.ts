@@ -597,6 +597,7 @@ export class SheetController {
     this.previousFocus = this.root.ownerDocument.activeElement;
     this.presented = true;
     this.activeDetent = clamp(options.detent ?? this.resolveInitialDetent(), 1, this.detentOffsetsPx.length - 1);
+    this.updateDetentState();
     this.updateDomState(true);
     this.lockPage();
     this.applyInert();
@@ -622,6 +623,7 @@ export class SheetController {
     const previous = this.activeDetent;
     this.presented = false;
     this.activeDetent = 0;
+    this.updateDetentState();
     this.setStatus('exiting');
     dispatch(this.root, 'cap-sheet-dismiss', this.getTravelEvent());
     await this.animateTo(this.detentOffsetsPx[0] || this.hiddenOffsetPx, {
@@ -663,6 +665,7 @@ export class SheetController {
 
     const previous = this.activeDetent;
     this.activeDetent = target;
+    this.updateDetentState();
     this.setStatus('settling');
     await this.animateTo(this.detentOffsetsPx[target] || 0, {
       ...(this.options.steppingAnimationSettings || {}),
@@ -1250,6 +1253,13 @@ export class SheetController {
   private emitActiveDetentChange(activeDetent: number, previousActiveDetent: number): void {
     const detail: SheetActiveDetentChangeEvent = { activeDetent, previousActiveDetent };
     dispatch(this.root, 'cap-sheet-active-detent-change', detail);
+  }
+
+  private updateDetentState(): void {
+    const activeDetent = String(this.activeDetent);
+    this.root.dataset.activeDetent = activeDetent;
+    if (this.parts.view) this.parts.view.dataset.activeDetent = activeDetent;
+    if (this.parts.content) this.parts.content.dataset.activeDetent = activeDetent;
   }
 
   private registerStack(): void {
