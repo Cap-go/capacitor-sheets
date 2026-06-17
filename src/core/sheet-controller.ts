@@ -2,7 +2,9 @@ import { releaseThemeColorDimmer, retainThemeColorDimmer, setThemeColorDimming }
 import type {
   SheetActiveDetentChangeEvent,
   SheetAnimationSettings,
+  SheetInsetValue,
   SheetOptions,
+  SheetPlacement,
   SheetPresentedChangeEvent,
   SheetProgressAnimation,
   SheetSafeAreaEdge,
@@ -60,6 +62,7 @@ const defaultOptions: Required<
     | 'contentPlacement'
     | 'sheetRole'
     | 'safeArea'
+    | 'detached'
     | 'swipe'
     | 'swipeDismissal'
     | 'swipeOvershoot'
@@ -76,6 +79,7 @@ const defaultOptions: Required<
 > = {
   contentPlacement: 'bottom',
   sheetRole: 'dialog',
+  detached: false,
   safeArea: 'auto',
   swipe: true,
   swipeDismissal: true,
@@ -121,13 +125,71 @@ function normalizeDetents(value: string | string[] | undefined): string[] {
   return parseList(value || null);
 }
 
+const unitlessInsetPattern = /^-?(?:\d+(?:\.\d+)?|\.\d+)$/;
+
+function normalizeInsetValue(value: string): string {
+  return unitlessInsetPattern.test(value) ? `${value}px` : value;
+}
+
+function parseInset(value: string | null): SheetInsetValue | undefined {
+  const normalized = value?.trim();
+  return normalized ? normalizeInsetValue(normalized) : undefined;
+}
+
+function formatInsetValue(value: SheetInsetValue | undefined): string {
+  if (typeof value === 'number') return Number.isFinite(value) ? `${value}px` : '0em';
+  const normalized = value?.trim();
+  return normalized ? normalizeInsetValue(normalized) : '0em';
+}
+
+function explicitInsetForEdge(options: SheetOptions, edge: SheetSafeAreaEdge): SheetInsetValue | undefined {
+  switch (edge) {
+    case 'top':
+      return options.topInset;
+    case 'bottom':
+      return options.bottomInset;
+    case 'left':
+      return options.leftInset;
+    case 'right':
+      return options.rightInset;
+  }
+}
+
+function containerInsetForEdge(options: SheetOptions, edge: SheetSafeAreaEdge): string {
+  const values = [options.containerOffset?.[edge], explicitInsetForEdge(options, edge)]
+    .map(formatInsetValue)
+    .filter((value) => value !== '0em');
+  if (values.length === 0) return '0em';
+  if (values.length === 1) return values[0];
+  return `calc(${values.join(' + ')})`;
+}
+
+function hasOwnOption(options: Partial<SheetOptions>, key: keyof SheetOptions): boolean {
+  return Object.prototype.hasOwnProperty.call(options, key);
+}
+
+function affectsDismissedOffset(options: Partial<SheetOptions>): boolean {
+  return (
+    hasOwnOption(options, 'contentPlacement') ||
+    hasOwnOption(options, 'tracks') ||
+    hasOwnOption(options, 'detents') ||
+    hasOwnOption(options, 'safeArea') ||
+    hasOwnOption(options, 'topInset') ||
+    hasOwnOption(options, 'bottomInset') ||
+    hasOwnOption(options, 'leftInset') ||
+    hasOwnOption(options, 'rightInset') ||
+    hasOwnOption(options, 'containerOffset')
+  );
+}
+
 const safeAreaEdges: SheetSafeAreaEdge[] = ['top', 'bottom', 'left', 'right'];
 
 function parseSafeArea(value: string | null): SheetSafeAreaMode | undefined {
   if (value === null) return undefined;
 
   const normalized = value.trim().toLowerCase();
-  if (!normalized || normalized === 'true' || normalized === 'auto' || normalized === 'all') return 'auto';
+  if (!normalized || normalized === 'auto') return 'auto';
+  if (normalized === 'true' || normalized === 'all') return 'all';
   if (normalized === 'false' || normalized === 'none' || normalized === 'off') return 'none';
 
   const edges = parseList(normalized).filter((edge): edge is SheetSafeAreaEdge =>
@@ -135,11 +197,26 @@ function parseSafeArea(value: string | null): SheetSafeAreaMode | undefined {
   );
   return edges.length > 0 ? edges : 'auto';
 }
+function resolveAutoSafeAreaEdges(placement: SheetPlacement): SheetSafeAreaEdge[] {
+  switch (placement) {
+    case 'bottom':
+      return ['bottom', 'left', 'right'];
+    case 'top':
+      return ['top', 'left', 'right'];
+    case 'left':
+      return ['top', 'bottom', 'left'];
+    case 'right':
+      return ['top', 'bottom', 'right'];
+    case 'center':
+      return safeAreaEdges;
+  }
+}
 
-function resolveSafeAreaEdges(value: SheetSafeAreaMode | undefined): SheetSafeAreaEdge[] {
+function resolveSafeAreaEdges(value: SheetSafeAreaMode | undefined, placement: SheetPlacement): SheetSafeAreaEdge[] {
   if (value === false || value === 'none') return [];
+  if (value === true || value === 'all') return safeAreaEdges;
   if (Array.isArray(value)) return value.filter((edge) => safeAreaEdges.includes(edge));
-  return safeAreaEdges;
+  return resolveAutoSafeAreaEdges(placement);
 }
 
 export function readOptionsFromElement(root: HTMLElement): SheetOptions {
@@ -158,6 +235,11 @@ export function readOptionsFromElement(root: HTMLElement): SheetOptions {
     sheetRole: root.getAttribute('sheet-role') || defaultOptions.sheetRole,
     contentPlacement: placement,
     safeArea: parseSafeArea(root.getAttribute('safe-area')),
+    detached: parseBoolean(root.getAttribute('detached'), defaultOptions.detached),
+    topInset: parseInset(root.getAttribute('top-inset')),
+    bottomInset: parseInset(root.getAttribute('bottom-inset')),
+    leftInset: parseInset(root.getAttribute('left-inset')),
+    rightInset: parseInset(root.getAttribute('right-inset')),
     tracks: parseTracks(root.getAttribute('tracks'), placement === 'center' ? 'bottom' : placement),
     swipe: parseBoolean(root.getAttribute('swipe'), defaultOptions.swipe),
     swipeDismissal: parseBoolean(root.getAttribute('swipe-dismissal'), defaultOptions.swipeDismissal),
@@ -448,6 +530,11 @@ export class SheetController {
       this.parts.content.setAttribute('aria-modal', attributeBoolean(this.options.inertOutside !== false));
     }
     this.linkAccessibleNames();
+    if (this.connected && !this.presented && this.parts.content && affectsDismissedOffset(options)) {
+      this.remeasure();
+      this.applyOffset(this.detentOffsetsPx[0] || this.hiddenOffsetPx, this.status);
+      this.updateDomState(false);
+    }
     this.registerStack();
   }
 
@@ -623,13 +710,31 @@ export class SheetController {
       const sign = trackSign(track);
       const axis = isVerticalTrack(track) ? 'y' : 'x';
       const rect = content.getBoundingClientRect();
+      const viewRect = view?.getBoundingClientRect();
       const size = axis === 'y' ? rect.height : rect.width;
-      this.hiddenOffsetPx = Math.max(size, 1) * sign;
+      const transformedX = axis === 'x' ? this.currentOffsetPx : 0;
+      const transformedY = axis === 'y' ? this.currentOffsetPx : 0;
+      const contentRect = {
+        top: rect.top - transformedY,
+        right: rect.right - transformedX,
+        bottom: rect.bottom - transformedY,
+        left: rect.left - transformedX,
+      };
+      let hiddenOffsetPx = Math.max(size, 1) * sign;
+
+      if (viewRect) {
+        if (track === 'top') hiddenOffsetPx = viewRect.top - contentRect.bottom;
+        if (track === 'bottom') hiddenOffsetPx = viewRect.bottom - contentRect.top;
+        if (track === 'left') hiddenOffsetPx = viewRect.left - contentRect.right;
+        if (track === 'right') hiddenOffsetPx = viewRect.right - contentRect.left;
+      }
+      this.hiddenOffsetPx = Math.abs(hiddenOffsetPx) > 1 ? hiddenOffsetPx : sign;
 
       const detents = normalizeDetents(this.options.detents);
       const offsets = [this.hiddenOffsetPx];
+      const measureContext = content;
       for (const detent of detents) {
-        const visible = measureCssLength(detent, content, axis);
+        const visible = measureCssLength(detent, measureContext, axis);
         const offset = Math.max(Math.abs(this.hiddenOffsetPx) - visible, 0) * sign;
         offsets.push(offset);
       }
@@ -843,13 +948,17 @@ export class SheetController {
     const view = this.parts.view;
     if (!view) return;
 
-    const edges = new Set(resolveSafeAreaEdges(this.options.safeArea));
+    const edges = new Set(
+      resolveSafeAreaEdges(this.options.safeArea, this.options.contentPlacement || defaultOptions.contentPlacement),
+    );
     view.dataset.safeArea = edges.size > 0 ? Array.from(edges).join(' ') : 'none';
+    view.dataset.detached = this.options.detached ? 'true' : 'false';
     for (const edge of safeAreaEdges) {
       view.style.setProperty(
         `--cap-sheet-applied-safe-area-${edge}`,
         edges.has(edge) ? `var(--cap-sheet-safe-area-${edge})` : '0em',
       );
+      view.style.setProperty(`--cap-sheet-container-offset-${edge}`, containerInsetForEdge(this.options, edge));
     }
   }
 

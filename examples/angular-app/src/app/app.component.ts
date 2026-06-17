@@ -543,6 +543,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       placement: 'bottom',
       detents: ['100dvh'],
       sheetClass: 'demo-sheet--long',
+      handle: false,
     },
     {
       slug: 'sheet-with-detent',
@@ -597,6 +598,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         closeOnEscape: true,
         focusTrap: false,
         restoreFocus: false,
+        detached: true,
+        bottomInset: '1em',
+        containerOffset: { left: '1em', right: '1em' },
       },
     },
     {
@@ -606,6 +610,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       placement: 'bottom',
       detents: ['32.5em'],
       sheetClass: 'demo-sheet--detached',
+      options: {
+        detached: true,
+        bottomInset: '0.4rem',
+        containerOffset: { left: '0.375rem', right: '0.375rem' },
+      },
     },
     {
       slug: 'page-from-bottom',
@@ -614,6 +623,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       placement: 'bottom',
       detents: ['100dvh'],
       sheetClass: 'demo-sheet--page',
+      handle: false,
     },
     {
       slug: 'top-sheet',

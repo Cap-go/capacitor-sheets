@@ -2,11 +2,13 @@ import '../components';
 
 import { applySheetOptions } from '../components/cap-sheet';
 import type {
+  SheetActiveDetentChangeEvent,
+  SheetContainerOffset,
+  SheetInsetValue,
   SheetOptions,
   SheetPresentedChangeEvent,
   SheetSafeAreaEdge,
   SheetSafeAreaMode,
-  SheetActiveDetentChangeEvent,
   SheetTravelEvent,
 } from '../core/types';
 
@@ -81,6 +83,11 @@ interface CapSheetsIntrinsicElements {
     detents?: string;
     'content-placement'?: Placement;
     'safe-area'?: SafeArea;
+    detached?: Booleanish;
+    'top-inset'?: number | string;
+    'bottom-inset'?: number | string;
+    'left-inset'?: number | string;
+    'right-inset'?: number | string;
     tracks?: string;
     'sheet-role'?: string;
     swipe?: Booleanish;
@@ -164,6 +171,8 @@ export type {
   SheetTravelEvent,
   SheetSafeAreaEdge,
   SheetSafeAreaMode,
+  SheetContainerOffset,
+  SheetInsetValue,
   Track,
   Placement,
 };

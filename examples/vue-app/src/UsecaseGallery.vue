@@ -49,6 +49,7 @@ const usecases: Usecase[] = [
     placement: 'bottom',
     detents: ['100dvh'],
     sheetClass: 'demo-sheet--long',
+    handle: false,
   },
   {
     slug: 'sheet-with-detent',
@@ -103,6 +104,9 @@ const usecases: Usecase[] = [
       closeOnEscape: true,
       focusTrap: false,
       restoreFocus: false,
+      detached: true,
+      bottomInset: '1em',
+      containerOffset: { left: '1em', right: '1em' },
     },
   },
   {
@@ -112,6 +116,11 @@ const usecases: Usecase[] = [
     placement: 'bottom',
     detents: ['32.5em'],
     sheetClass: 'demo-sheet--detached',
+    options: {
+      detached: true,
+      bottomInset: '0.4rem',
+      containerOffset: { left: '0.375rem', right: '0.375rem' },
+    },
   },
   {
     slug: 'page-from-bottom',
@@ -120,6 +129,7 @@ const usecases: Usecase[] = [
     placement: 'bottom',
     detents: ['100dvh'],
     sheetClass: 'demo-sheet--page',
+    handle: false,
   },
   {
     slug: 'top-sheet',

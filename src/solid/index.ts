@@ -5,6 +5,8 @@ import '../components';
 import { applySheetOptions } from '../components/cap-sheet';
 import type {
   SheetActiveDetentChangeEvent,
+  SheetContainerOffset,
+  SheetInsetValue,
   SheetOptions,
   SheetPresentedChangeEvent,
   SheetSafeAreaEdge,
@@ -55,6 +57,11 @@ type CapElementAttributes = JSX.HTMLAttributes<HTMLElement> & {
   'default-presented'?: boolean | 'true' | 'false';
   'active-detent'?: number | string;
   'safe-area'?: boolean | 'true' | 'false' | 'auto' | 'none' | 'all' | string;
+  detached?: boolean | 'true' | 'false';
+  'top-inset'?: number | string;
+  'bottom-inset'?: number | string;
+  'left-inset'?: number | string;
+  'right-inset'?: number | string;
   tracks?: string;
   'sheet-role'?: string;
   swipe?: boolean | 'true' | 'false';
@@ -108,4 +115,6 @@ export type {
   SheetTravelEvent,
   SheetSafeAreaEdge,
   SheetSafeAreaMode,
+  SheetContainerOffset,
+  SheetInsetValue,
 };

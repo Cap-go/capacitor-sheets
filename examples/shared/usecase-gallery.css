@@ -306,12 +306,12 @@ cap-sheet-content.demo-sheet-content cap-sheet-handle:focus-visible::before {
 
 cap-sheet-content.demo-sheet--long {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   width: min(100%, 35rem);
-  height: calc(100dvh - 0.75rem);
-  max-height: calc(100% - 0.75rem);
+  height: 100dvh;
+  max-height: 100%;
   padding: 0;
-  border-radius: 1.5rem 1.5rem 0 0;
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -816,18 +816,16 @@ cap-sheet[data-demo-usecase='sheet-with-depth'] cap-sheet-backdrop {
 }
 
 cap-sheet-content.demo-sheet--toast {
-  width: min(calc(100% - 2em), 30em);
+  width: min(100%, 30em);
   height: auto;
-  margin-block-end: calc(1em + env(safe-area-inset-bottom, 0em));
   border-radius: var(--demo-radius-md);
-  padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0em));
+  padding: 1rem;
   overflow: visible;
 }
 
 cap-sheet-content.demo-sheet--detached,
 cap-sheet-content.demo-sheet--persistent {
-  width: min(calc(100% - 2em), 34em);
-  margin-block-end: 1em;
+  width: min(100%, 34em);
   border-radius: 1rem;
 }
 
@@ -1448,6 +1446,7 @@ cap-sheet-content.demo-sheet--page {
 
 cap-sheet-content.demo-sheet--right-page {
   width: min(100%, 32em);
+  border-radius: 0;
 }
 
 cap-sheet-content.demo-sheet--page:not(.demo-sheet--right-page) {

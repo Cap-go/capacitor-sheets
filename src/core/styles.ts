@@ -18,6 +18,11 @@ const CSS = `
   --cap-sheet-applied-safe-area-bottom: var(--cap-sheet-safe-area-bottom);
   --cap-sheet-applied-safe-area-left: var(--cap-sheet-safe-area-left);
   --cap-sheet-applied-safe-area-right: var(--cap-sheet-safe-area-right);
+  --cap-sheet-container-offset-top: 0em;
+  --cap-sheet-container-offset-bottom: 0em;
+  --cap-sheet-container-offset-left: 0em;
+  --cap-sheet-container-offset-right: 0em;
+  --cap-sheet-keyboard-offset: 0em;
 }
 
 @supports (height: 1dvh) {
@@ -46,10 +51,13 @@ cap-sheet-view {
   overscroll-behavior: none;
   contain: layout style;
   box-sizing: border-box;
-  padding-block-start: var(--cap-sheet-applied-safe-area-top, 0em);
-  padding-block-end: calc(var(--cap-sheet-applied-safe-area-bottom, 0em) + var(--cap-sheet-keyboard-offset, 0em));
-  padding-inline-start: var(--cap-sheet-applied-safe-area-left, 0em);
-  padding-inline-end: var(--cap-sheet-applied-safe-area-right, 0em);
+  padding-top: calc(var(--cap-sheet-applied-safe-area-top, 0em) + var(--cap-sheet-container-offset-top, 0em));
+  padding-bottom: calc(
+    var(--cap-sheet-applied-safe-area-bottom, 0em) + var(--cap-sheet-container-offset-bottom, 0em) +
+      var(--cap-sheet-keyboard-offset, 0em)
+  );
+  padding-left: calc(var(--cap-sheet-applied-safe-area-left, 0em) + var(--cap-sheet-container-offset-left, 0em));
+  padding-right: calc(var(--cap-sheet-applied-safe-area-right, 0em) + var(--cap-sheet-container-offset-right, 0em));
 }
 
 cap-sheet-view[hidden] {
@@ -94,6 +102,7 @@ cap-sheet-backdrop {
 }
 
 cap-sheet-content {
+  --cap-sheet-content-border-radius: var(--cap-sheet-radius) var(--cap-sheet-radius) 0 0;
   box-sizing: border-box;
   position: relative;
   display: block;
@@ -101,7 +110,7 @@ cap-sheet-content {
   max-height: 100%;
   color: CanvasText;
   background: var(--cap-sheet-surface);
-  border-radius: var(--cap-sheet-radius) var(--cap-sheet-radius) 0 0;
+  border-radius: var(--cap-sheet-content-border-radius);
   box-shadow: var(--cap-sheet-shadow), var(--cap-sheet-edge-bleed-shadow, 0 0 0 0 transparent);
   overflow: auto;
   overscroll-behavior: contain;
@@ -112,27 +121,35 @@ cap-sheet-content {
 }
 
 cap-sheet-view[content-placement="top"] cap-sheet-content {
-  border-radius: 0 0 var(--cap-sheet-radius) var(--cap-sheet-radius);
+  --cap-sheet-content-border-radius: 0 0 var(--cap-sheet-radius) var(--cap-sheet-radius);
 }
 
 cap-sheet-view[content-placement="left"] cap-sheet-content {
   width: min(88%, 28em);
   height: 100%;
   max-height: 100%;
-  border-radius: 0 var(--cap-sheet-radius) var(--cap-sheet-radius) 0;
+  --cap-sheet-content-border-radius: 0 var(--cap-sheet-radius) var(--cap-sheet-radius) 0;
 }
 
 cap-sheet-view[content-placement="right"] cap-sheet-content {
   width: min(88%, 28em);
   height: 100%;
   max-height: 100%;
-  border-radius: var(--cap-sheet-radius) 0 0 var(--cap-sheet-radius);
+  --cap-sheet-content-border-radius: var(--cap-sheet-radius) 0 0 var(--cap-sheet-radius);
 }
 
 cap-sheet-view[content-placement="center"] cap-sheet-content {
   width: min(90%, 30em);
   max-height: min(90%, 42em);
-  border-radius: var(--cap-sheet-radius);
+  --cap-sheet-content-border-radius: var(--cap-sheet-radius);
+}
+
+cap-sheet-view[data-detached="true"] cap-sheet-content {
+  --cap-sheet-content-border-radius: var(--cap-sheet-detached-radius, var(--cap-sheet-radius));
+}
+
+cap-sheet-view[data-detached="true"] cap-sheet-content[data-cap-sheet-bleeds] {
+  --cap-sheet-edge-bleed-shadow: 0 0 0 0 transparent;
 }
 
 cap-sheet-bleeding-background {
