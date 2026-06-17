@@ -100,6 +100,16 @@ const defaultAnimation: Required<Pick<SheetAnimationSettings, 'duration' | 'easi
 
 const stackRegistry = new Map<string, Set<SheetController>>();
 
+interface DocumentLockSnapshot {
+  htmlOverflow: string;
+  htmlTouchAction: string;
+  bodyOverflow: string;
+  bodyTouchAction: string;
+}
+
+const documentLockDepth = new WeakMap<Document, number>();
+const documentLockSnapshot = new WeakMap<Document, DocumentLockSnapshot>();
+
 function parseNumber(value: string | null): number | undefined {
   if (value === null) return undefined;
   const parsed = Number.parseInt(value, 10);
@@ -221,10 +231,6 @@ export class SheetController {
   private pointerTravel: PointerTravel | null = null;
   private connected = false;
   private lockedScroll = false;
-  private previousBodyOverflow = '';
-  private previousBodyTouchAction = '';
-  private previousDocumentElementOverflow = '';
-  private previousDocumentElementTouchAction = '';
   private inertedElements = new Map<HTMLElement, { inert: boolean; ariaHidden: string | null }>();
   private previousFocus: Element | null = null;
   private hasThemeDimmer = false;
@@ -984,41 +990,60 @@ export class SheetController {
 
   private lockPage(): void {
     if (this.lockedScroll) return;
-    const documentElement = this.root.ownerDocument.documentElement;
-    const body = this.root.ownerDocument.body;
-    this.previousDocumentElementOverflow = documentElement.style.overflow;
-    this.previousDocumentElementTouchAction = documentElement.style.touchAction;
-    this.previousBodyOverflow = body.style.overflow;
-    this.previousBodyTouchAction = body.style.touchAction;
+    const doc = this.root.ownerDocument;
+    const documentElement = doc.documentElement;
+    const body = doc.body;
+    const depth = documentLockDepth.get(doc) ?? 0;
+
+    if (depth === 0) {
+      documentLockSnapshot.set(doc, {
+        htmlOverflow: documentElement.style.overflow,
+        htmlTouchAction: documentElement.style.touchAction,
+        bodyOverflow: body.style.overflow,
+        bodyTouchAction: body.style.touchAction,
+      });
+    }
+
     documentElement.style.overflow = 'hidden';
     documentElement.style.touchAction = 'none';
     body.dataset.capSheetScrollLocked = 'true';
     body.style.overflow = 'hidden';
     body.style.touchAction = 'none';
+    documentLockDepth.set(doc, depth + 1);
     this.lockedScroll = true;
   }
 
   private unlockPage(): void {
     if (!this.lockedScroll) return;
-    const documentElement = this.root.ownerDocument.documentElement;
-    const body = this.root.ownerDocument.body;
+    const doc = this.root.ownerDocument;
+    const documentElement = doc.documentElement;
+    const body = doc.body;
+    const depth = Math.max((documentLockDepth.get(doc) ?? 1) - 1, 0);
+
+    if (depth > 0) {
+      documentLockDepth.set(doc, depth);
+      this.lockedScroll = false;
+      return;
+    }
+
+    const snapshot = documentLockSnapshot.get(doc);
     delete body.dataset.capSheetScrollLocked;
-    documentElement.style.overflow = this.previousDocumentElementOverflow;
-    documentElement.style.touchAction = this.previousDocumentElementTouchAction;
-    body.style.overflow = this.previousBodyOverflow;
-    body.style.touchAction = this.previousBodyTouchAction;
-    this.previousDocumentElementOverflow = '';
-    this.previousDocumentElementTouchAction = '';
-    this.previousBodyOverflow = '';
-    this.previousBodyTouchAction = '';
+    documentElement.style.overflow = snapshot?.htmlOverflow ?? '';
+    documentElement.style.touchAction = snapshot?.htmlTouchAction ?? '';
+    body.style.overflow = snapshot?.bodyOverflow ?? '';
+    body.style.touchAction = snapshot?.bodyTouchAction ?? '';
+    documentLockDepth.delete(doc);
+    documentLockSnapshot.delete(doc);
     this.lockedScroll = false;
   }
 
   private setKeyboardOffset(value: string): void {
     const view = this.parts.view;
-    if (!view || view.style.getPropertyValue('--cap-sheet-keyboard-offset') === value) return;
+    if (!view) return;
 
-    view.style.setProperty('--cap-sheet-keyboard-offset', value);
+    if (view.style.getPropertyValue('--cap-sheet-keyboard-offset') !== value) {
+      view.style.setProperty('--cap-sheet-keyboard-offset', value);
+    }
     if (!this.presented) return;
 
     requestAnimationFrame(() => {
