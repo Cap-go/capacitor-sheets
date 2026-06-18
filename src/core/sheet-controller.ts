@@ -1047,6 +1047,7 @@ export class SheetController {
       content.setAttribute('tabindex', content.getAttribute('tabindex') || '-1');
     }
     this.root.toggleAttribute('presented', presented);
+    this.updateDetentState();
   }
 
   private linkAccessibleNames(): void {
