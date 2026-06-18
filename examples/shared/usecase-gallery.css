@@ -528,7 +528,7 @@ cap-sheet-content.demo-sheet--form {
   display: grid;
   justify-items: center;
   gap: 1rem;
-  padding: 1.75rem 1.5rem calc(2.5rem + env(safe-area-inset-bottom, 0em));
+  padding: 1.75rem 1.5rem 2.5rem;
   text-align: center;
 }
 
@@ -707,6 +707,7 @@ cap-sheet-content.demo-sheet--form {
   padding: 0.85em;
   background: var(--demo-surface);
   color: var(--demo-text);
+  font-size: 1rem;
 }
 
 cap-sheet[data-demo-usecase='sheet-with-depth'] cap-sheet-backdrop {
@@ -829,8 +830,9 @@ cap-sheet-content.demo-sheet--persistent {
 }
 
 cap-sheet-content.demo-sheet--detached {
-  width: min(100%, 26.25rem);
-  height: min(100%, 32.5rem);
+  width: min(calc(100% - 2rem), 26.25rem);
+  height: min(calc(100% - 2rem), 32.5rem);
+  margin-block-end: 1rem;
   border-radius: 1.8rem;
   padding: 0 1.5rem 1.45rem;
   box-shadow: 0 1rem 2.75rem rgb(15 23 42 / 0.18);
@@ -977,8 +979,12 @@ cap-sheet-content.demo-sheet--persistent {
   max-height: 100%;
   margin-block-end: 0;
   border-radius: 1.5rem 1.5rem 0 0;
-  padding: 0 1rem calc(0.75rem + env(safe-area-inset-bottom, 0em));
+  padding: 0 1rem 1rem;
   overflow: hidden;
+}
+
+cap-sheet-content.demo-sheet--persistent[data-active-detent='2'] {
+  padding-block-start: calc(1rem + env(safe-area-inset-top, 0em));
 }
 
 cap-sheet-content.demo-sheet--top {
@@ -1447,6 +1453,16 @@ cap-sheet-content.demo-sheet--right-page {
   border-radius: 0;
 }
 
+cap-sheet-content.demo-sheet--page:not(.demo-sheet--right-page) {
+  height: calc(100% - 0.75rem);
+  border-radius: 1.25rem 1.25rem 0 0;
+}
+
+cap-sheet-content.demo-sheet--right-page {
+  border-inline-start: 0.0625rem solid var(--demo-border);
+  box-shadow: -0.5rem 0 2rem rgb(20 23 22 / 0.12);
+}
+
 .demo-page-head {
   font-size: 1.15em;
   font-weight: 900;
@@ -1822,7 +1838,10 @@ cap-sheet-content.demo-sheet--card {
   align-content: center;
   gap: 1.25rem;
   min-height: 0;
-  padding-block: 0.5rem calc(1rem + env(safe-area-inset-bottom, 0em));
+  padding-block: 0.5rem 1rem;
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .demo-player-art,

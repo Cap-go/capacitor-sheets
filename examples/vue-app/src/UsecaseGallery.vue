@@ -50,7 +50,6 @@ const usecases: Usecase[] = [
     detents: ['100dvh'],
     sheetClass: 'demo-sheet--long',
     handle: false,
-    options: { safeArea: 'none' },
   },
   {
     slug: 'sheet-with-detent',
@@ -87,7 +86,7 @@ const usecases: Usecase[] = [
     placement: 'bottom',
     detents: ['24em', '38em'],
     sheetClass: 'demo-sheet--form',
-    options: { nativeFocusScrollPrevention: true, safeArea: 'none' },
+    options: { defaultActiveDetent: 2, nativeFocusScrollPrevention: true },
   },
   {
     slug: 'toast',
@@ -131,7 +130,6 @@ const usecases: Usecase[] = [
     detents: ['100dvh'],
     sheetClass: 'demo-sheet--page',
     handle: false,
-    options: { safeArea: 'none' },
   },
   {
     slug: 'top-sheet',
@@ -187,8 +185,8 @@ const usecases: Usecase[] = [
     summary: 'Route-like page overlay from the right edge.',
     placement: 'right',
     detents: ['100dvw'],
+    handle: false,
     sheetClass: 'demo-sheet--page demo-sheet--right-page',
-    options: { safeArea: 'none' },
   },
   {
     slug: 'lightbox',
@@ -222,7 +220,6 @@ const usecases: Usecase[] = [
       inertOutside: false,
       closeOnOutsideClick: false,
       focusTrap: false,
-      safeArea: 'none',
       swipeDismissal: false,
     },
   },

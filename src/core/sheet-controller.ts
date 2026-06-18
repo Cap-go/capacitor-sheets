@@ -104,6 +104,16 @@ const defaultAnimation: Required<Pick<SheetAnimationSettings, 'duration' | 'easi
 
 const stackRegistry = new Map<string, Set<SheetController>>();
 
+interface DocumentLockSnapshot {
+  htmlOverflow: string;
+  htmlTouchAction: string;
+  bodyOverflow: string;
+  bodyTouchAction: string;
+}
+
+const documentLockDepth = new WeakMap<Document, number>();
+const documentLockSnapshot = new WeakMap<Document, DocumentLockSnapshot>();
+
 function parseNumber(value: string | null): number | undefined {
   if (value === null) return undefined;
   const parsed = Number.parseInt(value, 10);
@@ -303,8 +313,6 @@ export class SheetController {
   private pointerTravel: PointerTravel | null = null;
   private connected = false;
   private lockedScroll = false;
-  private previousBodyOverflow = '';
-  private previousBodyTouchAction = '';
   private inertedElements = new Map<HTMLElement, { inert: boolean; ariaHidden: string | null }>();
   private previousFocus: Element | null = null;
   private hasThemeDimmer = false;
@@ -318,13 +326,23 @@ export class SheetController {
     const visualViewport = this.root.ownerDocument.defaultView?.visualViewport;
     if (!view) return;
     if (!visualViewport || this.options.nativeFocusScrollPrevention === false) {
-      view.style.setProperty('--cap-sheet-keyboard-offset', '0em');
+      this.setKeyboardOffset('0em');
       return;
     }
 
     const layoutHeight = this.root.ownerDocument.documentElement.clientHeight;
     const keyboardOffset = Math.max(0, layoutHeight - visualViewport.height - visualViewport.offsetTop);
-    view.style.setProperty('--cap-sheet-keyboard-offset', `${toEm(view, keyboardOffset)}em`);
+    this.setKeyboardOffset(`${toEm(view, keyboardOffset)}em`);
+  };
+
+  private readonly handleFocusIn = (event: FocusEvent): void => {
+    if (!this.presented || this.options.nativeFocusScrollPrevention === false) return;
+    const target = event.target;
+    const content = this.parts.content;
+    if (!(target instanceof HTMLElement) || !content?.contains(target)) return;
+    if (!['input', 'select', 'textarea'].includes(target.localName) && !target.isContentEditable) return;
+
+    requestAnimationFrame(() => target.scrollIntoView({ block: 'nearest', inline: 'nearest' }));
   };
 
   private readonly handleDocumentKeyDown = (event: KeyboardEvent): void => {
@@ -579,6 +597,7 @@ export class SheetController {
     this.previousFocus = this.root.ownerDocument.activeElement;
     this.presented = true;
     this.activeDetent = clamp(options.detent ?? this.resolveInitialDetent(), 1, this.detentOffsetsPx.length - 1);
+    this.updateDetentState();
     this.updateDomState(true);
     this.lockPage();
     this.applyInert();
@@ -604,6 +623,7 @@ export class SheetController {
     const previous = this.activeDetent;
     this.presented = false;
     this.activeDetent = 0;
+    this.updateDetentState();
     this.setStatus('exiting');
     dispatch(this.root, 'cap-sheet-dismiss', this.getTravelEvent());
     await this.animateTo(this.detentOffsetsPx[0] || this.hiddenOffsetPx, {
@@ -645,6 +665,7 @@ export class SheetController {
 
     const previous = this.activeDetent;
     this.activeDetent = target;
+    this.updateDetentState();
     this.setStatus('settling');
     await this.animateTo(this.detentOffsetsPx[target] || 0, {
       ...(this.options.steppingAnimationSettings || {}),
@@ -974,6 +995,7 @@ export class SheetController {
     view.addEventListener('pointermove', this.handlePointerMove, { passive: false });
     view.addEventListener('pointerup', this.handlePointerUp);
     view.addEventListener('pointercancel', this.handlePointerUp);
+    view.addEventListener('focusin', this.handleFocusIn);
     view.addEventListener('wheel', this.handleWheel, { passive: false });
     this.viewListenersElement = view;
   }
@@ -987,6 +1009,7 @@ export class SheetController {
     view.removeEventListener('pointermove', this.handlePointerMove);
     view.removeEventListener('pointerup', this.handlePointerUp);
     view.removeEventListener('pointercancel', this.handlePointerUp);
+    view.removeEventListener('focusin', this.handleFocusIn);
     view.removeEventListener('wheel', this.handleWheel);
     this.viewListenersElement = null;
   }
@@ -1024,6 +1047,7 @@ export class SheetController {
       content.setAttribute('tabindex', content.getAttribute('tabindex') || '-1');
     }
     this.root.toggleAttribute('presented', presented);
+    this.updateDetentState();
   }
 
   private linkAccessibleNames(): void {
@@ -1079,24 +1103,67 @@ export class SheetController {
 
   private lockPage(): void {
     if (this.lockedScroll) return;
-    const body = this.root.ownerDocument.body;
-    this.previousBodyOverflow = body.style.overflow;
-    this.previousBodyTouchAction = body.style.touchAction;
+    const doc = this.root.ownerDocument;
+    const documentElement = doc.documentElement;
+    const body = doc.body;
+    const depth = documentLockDepth.get(doc) ?? 0;
+
+    if (depth === 0) {
+      documentLockSnapshot.set(doc, {
+        htmlOverflow: documentElement.style.overflow,
+        htmlTouchAction: documentElement.style.touchAction,
+        bodyOverflow: body.style.overflow,
+        bodyTouchAction: body.style.touchAction,
+      });
+    }
+
+    documentElement.style.overflow = 'hidden';
+    documentElement.style.touchAction = 'none';
     body.dataset.capSheetScrollLocked = 'true';
     body.style.overflow = 'hidden';
     body.style.touchAction = 'none';
+    documentLockDepth.set(doc, depth + 1);
     this.lockedScroll = true;
   }
 
   private unlockPage(): void {
     if (!this.lockedScroll) return;
-    const body = this.root.ownerDocument.body;
+    const doc = this.root.ownerDocument;
+    const documentElement = doc.documentElement;
+    const body = doc.body;
+    const depth = Math.max((documentLockDepth.get(doc) ?? 1) - 1, 0);
+
+    if (depth > 0) {
+      documentLockDepth.set(doc, depth);
+      this.lockedScroll = false;
+      return;
+    }
+
+    const snapshot = documentLockSnapshot.get(doc);
     delete body.dataset.capSheetScrollLocked;
-    body.style.overflow = this.previousBodyOverflow;
-    body.style.touchAction = this.previousBodyTouchAction;
-    this.previousBodyOverflow = '';
-    this.previousBodyTouchAction = '';
+    documentElement.style.overflow = snapshot?.htmlOverflow ?? '';
+    documentElement.style.touchAction = snapshot?.htmlTouchAction ?? '';
+    body.style.overflow = snapshot?.bodyOverflow ?? '';
+    body.style.touchAction = snapshot?.bodyTouchAction ?? '';
+    documentLockDepth.delete(doc);
+    documentLockSnapshot.delete(doc);
     this.lockedScroll = false;
+  }
+
+  private setKeyboardOffset(value: string): void {
+    const view = this.parts.view;
+    if (!view) return;
+
+    if (view.style.getPropertyValue('--cap-sheet-keyboard-offset') !== value) {
+      view.style.setProperty('--cap-sheet-keyboard-offset', value);
+    }
+    if (!this.presented) return;
+
+    requestAnimationFrame(() => {
+      if (!this.presented) return;
+      this.remeasure();
+      this.applyOffset(this.detentOffsetsPx[this.activeDetent] || 0, this.status);
+    });
   }
 
   private applyInert(): void {
@@ -1187,6 +1254,13 @@ export class SheetController {
   private emitActiveDetentChange(activeDetent: number, previousActiveDetent: number): void {
     const detail: SheetActiveDetentChangeEvent = { activeDetent, previousActiveDetent };
     dispatch(this.root, 'cap-sheet-active-detent-change', detail);
+  }
+
+  private updateDetentState(): void {
+    const activeDetent = String(this.activeDetent);
+    this.root.dataset.activeDetent = activeDetent;
+    if (this.parts.view) this.parts.view.dataset.activeDetent = activeDetent;
+    if (this.parts.content) this.parts.content.dataset.activeDetent = activeDetent;
   }
 
   private registerStack(): void {
