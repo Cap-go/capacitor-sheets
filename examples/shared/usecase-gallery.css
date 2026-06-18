@@ -463,7 +463,7 @@ cap-sheet-content.demo-sheet--form {
 
 .demo-long-close {
   position: absolute;
-  inset-block-start: 1rem;
+  inset-block-start: calc(1rem + env(safe-area-inset-top, 0em));
   inset-inline-end: 1rem;
   z-index: 3;
   display: grid;
