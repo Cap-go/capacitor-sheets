@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <title>@capgo/capacitor-sheets</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>@capgo/capacitor-sheets</h1>
+      <p class="lead">Open a native-style bottom sheet using Cap Sheets custom elements.</p>
+      <cap-sheet>
+        <cap-sheet-trigger>
+          <button id="open-sheet" type="button">Open Sheet</button>
+        </cap-sheet-trigger>
+        <cap-sheet-portal>
+          <cap-sheet-view>
+            <cap-sheet-content>
+              <cap-sheet-title>Cap Sheets</cap-sheet-title>
+              <cap-sheet-description>Drag, dismiss, and resize this sheet from the handle.</cap-sheet-description>
+              <p>Framework demos also live in the repository <code>examples/</code> folder.</p>
+            </cap-sheet-content>
+            <cap-sheet-handle></cap-sheet-handle>
+          </cap-sheet-view>
+          <cap-sheet-backdrop></cap-sheet-backdrop>
+        </cap-sheet-portal>
+      </cap-sheet>
+      <pre id="output">Tap Open Sheet to validate the web component wiring.</pre>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

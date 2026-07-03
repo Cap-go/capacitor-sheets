@@ -74,7 +74,9 @@
     "fmt": "bun run eslint -- --fix && bun run prettier -- --write",
     "eslint": "eslint .",
     "prettier": "prettier-pretty-check \"**/*.{css,html,ts,js,json,md}\"",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun run build",
+    "example:install": "cd example-app && bun install --frozen-lockfile",
+    "example:build": "bun run build && cd example-app && bun install --frozen-lockfile && bun run build"
   },
   "keywords": [
     "capacitor",
