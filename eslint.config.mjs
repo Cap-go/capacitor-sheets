@@ -15,7 +15,7 @@ const compat = new FlatCompat({
 
 export default [
   {
-    ignores: ['node_modules/**', 'dist/**', 'examples/**', 'ios/**', 'android/**'],
+    ignores: ['node_modules/**', 'dist/**', 'examples/**', 'example-app/**', 'ios/**', 'android/**'],
   },
   ...compat.extends('@ionic/eslint-config/recommended'),
   {
@@ -23,7 +23,7 @@ export default [
       parser: tsParser,
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['eslint.config.mjs', '*.config.ts', 'scripts/*.ts'],
+          allowDefaultProject: ['eslint.config.mjs', '*.config.ts', 'scripts/*.ts', 'scripts/*.mjs'],
         },
         tsconfigRootDir: rootDir,
       },
