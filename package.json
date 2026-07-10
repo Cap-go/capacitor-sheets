@@ -77,7 +77,8 @@
     "prepublishOnly": "bun run build",
     "example:install": "cd example-app && bun install --frozen-lockfile",
     "example:build": "bun run build && cd example-app && bun install --frozen-lockfile && bun run build",
-    "deploy:capgo:example": "bun run example:build && cd example-app && bunx @capgo/cli@latest bundle upload app.capgo.capacitor.sheets --path dist --channel production --package-json package.json,../package.json --node-modules node_modules,../node_modules --delta --no-key --ignore-checksum-check --version-exists-ok"
+    "deploy:capgo:example": "bun run example:build && cd example-app && bunx @capgo/cli@latest bundle upload app.capgo.capacitor.sheets --path dist --channel production --package-json package.json,../package.json --node-modules node_modules,../node_modules --delta --no-key --ignore-checksum-check --version-exists-ok",
+    "changelog:ai": "node scripts/generate-ai-changelog.mjs"
   },
   "keywords": [
     "capacitor",
