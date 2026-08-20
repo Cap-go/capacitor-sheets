@@ -240,7 +240,7 @@ jobs:
               'Source: `' + shortSha + '`',
               `Requested by @${actor}`,
               '',
-              'Latest beta (after Cap-go/automations approves the stage):',
+              'Latest beta:',
               '```sh',
               `bun add ${packageName}@beta`,
               `bun add ${packageName}@${version}`,
