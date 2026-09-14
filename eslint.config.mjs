@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';
 import tsParser from '@typescript-eslint/parser';
+import globals from 'globals';
 
 const rootDir = dirname(fileURLToPath(import.meta.url));
 
@@ -33,6 +34,12 @@ export default [
     files: ['eslint.config.mjs'],
     rules: {
       'import/order': 'off',
+    },
+  },
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: globals.node,
     },
   },
 ];
