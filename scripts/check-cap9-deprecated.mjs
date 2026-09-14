@@ -116,7 +116,12 @@ function parseArgs(argv) {
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--dir" || a === "--pluginDir") {
-      out.dir = path.resolve(argv[++i] || ".");
+      const next = argv[++i];
+      if (!next || next.startsWith("-")) {
+        console.error(`[cap9-deprecated] ERROR: missing value for ${a}`);
+        process.exit(2);
+      }
+      out.dir = path.resolve(next);
       continue;
     }
   }
@@ -215,7 +220,7 @@ if (!cap.android && !cap.ios) {
   process.exit(0);
 }
 
-const scanRoots = collectScanRoots(pluginDir, cap);
+const scanRoots = collectScanRoots(pluginDir, pkg);
 const allExts = [...new Set(RULES.flatMap((r) => r.exts))];
 const files = [];
 for (const root of scanRoots) {
