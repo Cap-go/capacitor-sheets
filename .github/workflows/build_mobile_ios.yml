@@ -42,6 +42,8 @@ jobs:
           bun-version: latest
       - name: Install dependencies
         run: bun install --frozen-lockfile
+      - name: Check Cap 9 deprecated APIs
+        run: bun run check:cap9-deprecated
       - name: Resolve app id
         id: app_config
         run: echo "app_id=$(bun -e \"import config from './capacitor.config.ts'; console.log(config.appId)\")" >> "$GITHUB_OUTPUT"
