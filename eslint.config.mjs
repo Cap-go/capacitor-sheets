@@ -15,7 +15,7 @@ const compat = new FlatCompat({
 
 export default [
   {
-    ignores: ['node_modules/**', 'dist/**', 'examples/**', 'example-app/**', 'ios/**', 'android/**', 'scripts/check-cap9-deprecated.mjs'],
+    ignores: ['node_modules/**', 'dist/**', 'examples/**', 'example-app/**', 'ios/**', 'android/**', 'scripts/check-cap9-deprecated.mjs', 'scripts/generate-ai-changelog.mjs'],
   },
   ...compat.extends('@ionic/eslint-config/recommended'),
   {
