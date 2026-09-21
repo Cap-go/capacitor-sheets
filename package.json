@@ -122,7 +122,7 @@
     "@capgo/cli": "^8.0.0",
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^8.57.1",
-    "@ionic/eslint-config": "^0.4.0",
+    "@ionic/eslint-config": "^0.5.0",
     "@ionic/prettier-config": "^4.0.0",
     "@sveltejs/vite-plugin-svelte": "^7.1.2",
     "@types/node": "^26.0.0",
