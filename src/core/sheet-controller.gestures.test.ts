@@ -7,7 +7,7 @@ type ControllerInternals = {
   nearestDetentForOffset(offsetPx: number, velocity: number): number;
   detentOffsetsPx: number[];
   releaseVelocity(travel: { samples: { t: number; pos: number }[] }): number;
-  pointerTravel: { samples: { t: number; pos: number }[]; velocity: number } | null;
+  pointerTravel: { samples: { t: number; pos: number }[]; velocity: number; startOffsetPx: number } | null;
 };
 
 function mountSheet(id = 'sheet-a'): CapSheet {
@@ -67,6 +67,12 @@ function pointer(
     Object.defineProperty(event, 'timeStamp', { value: init.timeStamp });
   }
   target.dispatchEvent(event);
+}
+
+function toEmOffset(sheet: CapSheet, offsetPx: number): number {
+  const content = sheet.querySelector('cap-sheet-content')!;
+  const emPx = Number.parseFloat(window.getComputedStyle(content).fontSize) || 16;
+  return offsetPx / emPx;
 }
 
 beforeAll(() => {
@@ -140,19 +146,39 @@ describe('sheet-controller gesture fixes', () => {
   it('starts a drag from the rendered transform while an animation is running', async () => {
     const sheet = mountSheet();
     sheet.controller.connect();
+    await sheet.present({ animation: { duration: 0 } });
+
     const content = sheet.querySelector('cap-sheet-content') as HTMLElement;
+    const renderedOffsetPx = 192;
+    const internals = sheet.controller as unknown as ControllerInternals & {
+      currentOffsetPx: number;
+      activeMotion: { cancel: () => void } | null;
+    };
 
-    const presentPromise = sheet.present({ animation: { duration: 420, skip: false } });
-    await vi.advanceTimersByTimeAsync(210);
+    internals.currentOffsetPx = 0;
+    content.style.transform = 'translate3d(0, 0em, 0)';
+    internals.activeMotion = { cancel: vi.fn() };
 
-    content.style.transform = 'translate3d(0, 12em, 0)';
+    const originalGetComputedStyle = window.getComputedStyle.bind(window);
+    const computedStyleSpy = vi.spyOn(window, 'getComputedStyle').mockImplementation((element, pseudo) => {
+      const style = originalGetComputedStyle(element, pseudo);
+      if (element === content) {
+        Object.defineProperty(style, 'transform', {
+          configurable: true,
+          value: `matrix(1, 0, 0, 1, 0, ${renderedOffsetPx})`,
+        });
+      }
+      return style;
+    });
+
     const handle = sheet.querySelector('cap-sheet-handle')!;
     pointer(handle, 'pointerdown', { clientX: 195, clientY: 500 });
-    pointer(handle, 'pointermove', { clientX: 195, clientY: 520 });
-    pointer(handle, 'pointerup', { clientX: 195, clientY: 520 });
+    expect(internals.pointerTravel?.startOffsetPx).toBeCloseTo(renderedOffsetPx, 0);
 
-    await presentPromise.catch(() => undefined);
-    expect(sheet.controller.getTravelEvent().status).not.toBe('exiting');
+    pointer(handle, 'pointermove', { clientX: 195, clientY: 520 });
+    expect(Number(sheet.controller.getTravelEvent().offset)).toBeCloseTo(toEmOffset(sheet, renderedOffsetPx + 20), 1);
+
+    computedStyleSpy.mockRestore();
   });
 
   it('restores page interactivity after overlapping present and dismiss', async () => {

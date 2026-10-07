@@ -386,8 +386,9 @@ export class SheetController {
       event.preventDefault();
     }
 
-    this.cancelActiveMotion();
     this.syncOffsetFromRenderedPosition();
+    this.cancelActiveMotion();
+    this.applyOffset(this.currentOffsetPx, this.status);
     this.remeasure();
     const axis = isVerticalTrack(this.activeTrack) ? 'y' : 'x';
     const startPos = axis === 'y' ? event.clientY : event.clientX;
@@ -627,10 +628,14 @@ export class SheetController {
     this.retainThemeDimmer();
     this.setStatus('entering');
     dispatch(this.root, 'cap-sheet-present', this.getTravelEvent());
-    await this.animateTo(this.detentOffsetsPx[this.activeDetent] || 0, {
-      ...(this.options.enteringAnimationSettings || {}),
-      ...(options.animation || {}),
-    });
+    if (
+      !(await this.animateTo(this.detentOffsetsPx[this.activeDetent] || 0, {
+        ...(this.options.enteringAnimationSettings || {}),
+        ...(options.animation || {}),
+      }))
+    ) {
+      return;
+    }
     this.setStatus('idle');
     this.focusInitialElement();
     this.emitPresentedChange(true, options.source || 'programmatic');
@@ -690,10 +695,14 @@ export class SheetController {
     this.activeDetent = target;
     this.updateDetentState();
     this.setStatus('settling');
-    await this.animateTo(this.detentOffsetsPx[target] || 0, {
-      ...(this.options.steppingAnimationSettings || {}),
-      ...(options.animation || {}),
-    });
+    if (
+      !(await this.animateTo(this.detentOffsetsPx[target] || 0, {
+        ...(this.options.steppingAnimationSettings || {}),
+        ...(options.animation || {}),
+      }))
+    ) {
+      return;
+    }
     this.setStatus('idle');
     if (previous !== target) {
       this.emitActiveDetentChange(target, previous);
@@ -842,14 +851,14 @@ export class SheetController {
     dispatch(this.root, 'cap-sheet-travel', this.getTravelEvent());
   }
 
-  private async animateTo(targetOffsetPx: number, settings?: SheetAnimationSettings): Promise<void> {
+  private async animateTo(targetOffsetPx: number, settings?: SheetAnimationSettings): Promise<boolean> {
     const content = this.parts.content;
     const backdrop = this.parts.backdrop;
     const resolved = resolveAnimation(settings);
 
     if (!content || shouldSkipMotion(resolved.skip)) {
       this.applyOffset(targetOffsetPx, 'idle');
-      return;
+      return true;
     }
 
     const startOffset = this.currentOffsetPx;
@@ -919,13 +928,14 @@ export class SheetController {
       contentAnimation?.finished,
       backdropAnimation ? backdropAnimation.finished : Promise.resolve(),
     ]);
-    if (cancelled) return;
+    if (cancelled) return false;
 
     cancelAnimationFrame(frame);
     contentAnimation?.cancel();
     backdropAnimation?.cancel();
     this.activeMotion = null;
     this.applyOffset(targetOffsetPx, 'idle');
+    return true;
   }
 
   private getProgressForOffset(offsetPx: number): number {
@@ -1223,17 +1233,14 @@ export class SheetController {
     if (offsetPx === null) return;
 
     this.currentOffsetPx = offsetPx;
-    const transform = content.style.transform;
-    if (transform) {
-      content.style.transform = transform;
-    }
   }
 
   private readOffsetPxFromTransform(content: HTMLElement): number | null {
     const axis = isVerticalTrack(this.activeTrack) ? 'y' : 'x';
-    const transform =
-      content.style.transform || this.root.ownerDocument.defaultView?.getComputedStyle(content).transform || '';
-    if (!transform || transform === 'none') return this.currentOffsetPx;
+    const computed = this.root.ownerDocument.defaultView?.getComputedStyle(content).transform;
+    const inline = content.style.transform;
+    const transform = computed && computed !== 'none' ? computed : inline && inline !== 'none' ? inline : '';
+    if (!transform) return this.currentOffsetPx;
 
     const translateMatch = transform.match(/translate3d\(\s*([^,]+)\s*,\s*([^,]+)\s*,/);
     if (translateMatch) {
@@ -1248,6 +1255,13 @@ export class SheetController {
     if (matrixMatch) {
       const values = matrixMatch[1].split(',').map((part) => Number.parseFloat(part.trim()));
       const translation = axis === 'y' ? values[5] : values[4];
+      if (Number.isFinite(translation)) return translation;
+    }
+
+    const matrix3dMatch = transform.match(/^matrix3d\(([^)]+)\)$/);
+    if (matrix3dMatch) {
+      const values = matrix3dMatch[1].split(',').map((part) => Number.parseFloat(part.trim()));
+      const translation = axis === 'y' ? values[13] : values[12];
       if (Number.isFinite(translation)) return translation;
     }
 
