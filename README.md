@@ -1,11 +1,25 @@
 # @capgo/capacitor-sheets
 
-<a href="https://capgo.app/">
+<a href="https://capgo.app/?ref=plugin_sheets">
   <img
     src="https://capgo.app/readme-banner.svg?repo=Cap-go/capacitor-sheets"
     alt="Capgo - Instant updates for Capacitor"
   />
 </a>
+
+<div align="center">
+  <p>
+    <b>Capgo</b>: open-source live updates for Ionic and Capacitor apps. Ship OTA fixes and features instantly, without
+    waiting for app store review.
+  </p>
+  <h2>
+    <a href="https://capgo.app/register/?ref=plugin_sheets">➡️ Get started for free</a>
+  </h2>
+  <p>14-day unlimited free trial. No credit card required</p>
+  <p>
+    <a href="https://capgo.app/consulting/?ref=plugin_sheets">Missing a feature? We'll build the plugin for you 💪</a>
+  </p>
+</div>
 
 Framework-agnostic sheets, drawers, dialogs, scroll helpers, and overlay primitives for Capacitor apps.
 
