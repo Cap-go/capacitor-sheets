@@ -17,6 +17,7 @@ import {
   clamp,
   createId,
   dispatch,
+  getEmPx,
   getFocusable,
   isVerticalTrack,
   measureCssLength,
@@ -54,7 +55,17 @@ interface PointerTravel {
   lastTime: number;
   velocity: number;
   dragging: boolean;
+  samples: { t: number; pos: number }[];
 }
+
+interface InertElementSnapshot {
+  inert: boolean;
+  ariaHidden: string | null;
+}
+
+const inertDepth = new WeakMap<HTMLElement, number>();
+const inertOriginal = new WeakMap<HTMLElement, InertElementSnapshot>();
+const inertHolders = new WeakMap<Document, Set<SheetController>>();
 
 const defaultOptions: Required<
   Pick<
@@ -313,7 +324,9 @@ export class SheetController {
   private pointerTravel: PointerTravel | null = null;
   private connected = false;
   private lockedScroll = false;
-  private inertedElements = new Map<HTMLElement, { inert: boolean; ariaHidden: string | null }>();
+  private inertHeldElements = new Set<HTMLElement>();
+  private remeasureFrame: number | null = null;
+  private activeMotion: { cancel: () => void } | null = null;
   private previousFocus: Element | null = null;
   private hasThemeDimmer = false;
   private stackId: string | null = null;
@@ -321,18 +334,19 @@ export class SheetController {
   private viewListenersElement: HTMLElement | null = null;
   private visualViewportListenersAttached = false;
 
-  private readonly handleVisualViewportResize = (): void => {
+  private readonly handleVisualViewportResize = (event?: Event): void => {
     const view = this.parts.view;
     const visualViewport = this.root.ownerDocument.defaultView?.visualViewport;
     if (!view) return;
+    const viewportChanged = event !== undefined;
     if (!visualViewport || this.options.nativeFocusScrollPrevention === false) {
-      this.setKeyboardOffset('0em');
+      this.setKeyboardOffset('0em', viewportChanged);
       return;
     }
 
     const layoutHeight = this.root.ownerDocument.documentElement.clientHeight;
     const keyboardOffset = Math.max(0, layoutHeight - visualViewport.height - visualViewport.offsetTop);
-    this.setKeyboardOffset(`${toEm(view, keyboardOffset)}em`);
+    this.setKeyboardOffset(`${toEm(view, keyboardOffset)}em`, viewportChanged);
   };
 
   private readonly handleFocusIn = (event: FocusEvent): void => {
@@ -372,7 +386,11 @@ export class SheetController {
       event.preventDefault();
     }
 
+    this.cancelActiveMotion();
+    this.syncOffsetFromRenderedPosition();
     this.remeasure();
+    const axis = isVerticalTrack(this.activeTrack) ? 'y' : 'x';
+    const startPos = axis === 'y' ? event.clientY : event.clientX;
     this.pointerTravel = {
       id: event.pointerId,
       startOffsetPx: this.currentOffsetPx,
@@ -383,6 +401,7 @@ export class SheetController {
       lastTime: performance.now(),
       velocity: 0,
       dragging: false,
+      samples: [{ t: performance.now(), pos: startPos }],
     };
   };
 
@@ -415,6 +434,8 @@ export class SheetController {
     travel.lastX = event.clientX;
     travel.lastY = event.clientY;
     travel.lastTime = now;
+    travel.samples.push({ t: now, pos: current });
+    if (travel.samples.length > 24) travel.samples.shift();
 
     const nextOffset = this.limitOffset(travel.startOffsetPx + delta);
     this.applyOffset(nextOffset, 'dragging');
@@ -432,7 +453,7 @@ export class SheetController {
     this.pointerTravel = null;
     if (!travel.dragging) return;
 
-    const nearest = this.nearestDetentForOffset(this.currentOffsetPx, travel.velocity);
+    const nearest = this.nearestDetentForOffset(this.currentOffsetPx, this.releaseVelocity(travel));
     dispatch(this.root, 'cap-sheet-drag-end', this.getTravelEvent());
 
     if (nearest === 0 && this.options.swipeDismissal !== false) {
@@ -534,6 +555,8 @@ export class SheetController {
       this.remeasure();
       this.applyOffset(this.detentOffsetsPx[0] || this.hiddenOffsetPx, this.status);
       this.updateDomState(false);
+    } else if (this.presented && affectsDismissedOffset(options)) {
+      this.scheduleRemeasure();
     }
     this.registerStack();
   }
@@ -869,7 +892,19 @@ export class SheetController {
 
     const started = performance.now();
     let frame: number;
+    let cancelled = false;
+    const cancelMotion = (): void => {
+      if (cancelled) return;
+      cancelled = true;
+      cancelAnimationFrame(frame);
+      contentAnimation?.cancel();
+      backdropAnimation?.cancel();
+      this.activeMotion = null;
+    };
+    this.activeMotion = { cancel: cancelMotion };
+
     const tick = (): void => {
+      if (cancelled) return;
       const progress = duration === 0 ? 1 : clamp((performance.now() - started) / duration, 0, 1);
       const offset = startOffset + (targetOffsetPx - startOffset) * progress;
       this.currentOffsetPx = offset;
@@ -884,9 +919,12 @@ export class SheetController {
       contentAnimation?.finished,
       backdropAnimation ? backdropAnimation.finished : Promise.resolve(),
     ]);
+    if (cancelled) return;
+
     cancelAnimationFrame(frame);
     contentAnimation?.cancel();
     backdropAnimation?.cancel();
+    this.activeMotion = null;
     this.applyOffset(targetOffsetPx, 'idle');
   }
 
@@ -1150,52 +1188,176 @@ export class SheetController {
     this.lockedScroll = false;
   }
 
-  private setKeyboardOffset(value: string): void {
+  private setKeyboardOffset(value: string, viewportChanged = false): void {
     const view = this.parts.view;
     if (!view) return;
 
-    if (view.style.getPropertyValue('--cap-sheet-keyboard-offset') !== value) {
-      view.style.setProperty('--cap-sheet-keyboard-offset', value);
-    }
-    if (!this.presented) return;
+    const changed = view.style.getPropertyValue('--cap-sheet-keyboard-offset') !== value;
+    if (changed) view.style.setProperty('--cap-sheet-keyboard-offset', value);
+    if (changed || viewportChanged) this.scheduleRemeasure();
+  }
 
-    requestAnimationFrame(() => {
+  private scheduleRemeasure(): void {
+    if (!this.presented) return;
+    if (this.remeasureFrame !== null) return;
+
+    this.remeasureFrame = requestAnimationFrame(() => {
+      this.remeasureFrame = null;
       if (!this.presented) return;
       this.remeasure();
+      if (this.status === 'dragging') return;
       this.applyOffset(this.detentOffsetsPx[this.activeDetent] || 0, this.status);
     });
   }
 
+  private cancelActiveMotion(): void {
+    this.activeMotion?.cancel();
+    this.activeMotion = null;
+  }
+
+  private syncOffsetFromRenderedPosition(): void {
+    const content = this.parts.content;
+    if (!content || this.options.contentPlacement === 'center') return;
+
+    const offsetPx = this.readOffsetPxFromTransform(content);
+    if (offsetPx === null) return;
+
+    this.currentOffsetPx = offsetPx;
+    const transform = content.style.transform;
+    if (transform) {
+      content.style.transform = transform;
+    }
+  }
+
+  private readOffsetPxFromTransform(content: HTMLElement): number | null {
+    const axis = isVerticalTrack(this.activeTrack) ? 'y' : 'x';
+    const transform =
+      content.style.transform || this.root.ownerDocument.defaultView?.getComputedStyle(content).transform || '';
+    if (!transform || transform === 'none') return this.currentOffsetPx;
+
+    const translateMatch = transform.match(/translate3d\(\s*([^,]+)\s*,\s*([^,]+)\s*,/);
+    if (translateMatch) {
+      const raw = axis === 'y' ? translateMatch[2] : translateMatch[1];
+      const emMatch = raw.trim().match(/^(-?[\d.]+)em$/);
+      if (emMatch) return Number.parseFloat(emMatch[1]) * getEmPx(content);
+      const pxMatch = raw.trim().match(/^(-?[\d.]+)px$/);
+      if (pxMatch) return Number.parseFloat(pxMatch[1]);
+    }
+
+    const matrixMatch = transform.match(/^matrix\(([^)]+)\)$/);
+    if (matrixMatch) {
+      const values = matrixMatch[1].split(',').map((part) => Number.parseFloat(part.trim()));
+      const translation = axis === 'y' ? values[5] : values[4];
+      if (Number.isFinite(translation)) return translation;
+    }
+
+    return null;
+  }
+
+  private releaseVelocity(travel: PointerTravel): number {
+    const windowMs = 100;
+    const now = performance.now();
+    const samples = travel.samples.filter((sample) => now - sample.t <= windowMs);
+    if (samples.length < 2) return 0;
+
+    const first = samples[0];
+    const last = samples[samples.length - 1];
+    const elapsed = Math.max(last.t - first.t, 1);
+    return ((last.pos - first.pos) / elapsed) * 1000;
+  }
+
+  private getAllowedOutsideElements(): Set<HTMLElement> {
+    const allowed = new Set<HTMLElement>();
+    if (this.parts.view) allowed.add(this.parts.view);
+    for (const element of this.parts.islands) allowed.add(element);
+    for (const element of this.parts.externalOverlays) allowed.add(element);
+    return allowed;
+  }
+
+  private applyInertForElement(element: HTMLElement, allowed: Set<HTMLElement>): void {
+    const isAllowed = Array.from(allowed).some((candidate) => element === candidate || element.contains(candidate));
+    if (isAllowed) {
+      element.inert = false;
+      element.removeAttribute('aria-hidden');
+      return;
+    }
+    element.inert = true;
+    element.setAttribute('aria-hidden', 'true');
+  }
+
   private applyInert(): void {
     if (this.options.inertOutside === false || !this.parts.view) return;
-    const body = this.root.ownerDocument.body;
-    const allowed = new Set<HTMLElement>([this.parts.view, ...this.parts.islands, ...this.parts.externalOverlays]);
+    const doc = this.root.ownerDocument;
+    const body = doc.body;
+    const allowed = this.getAllowedOutsideElements();
 
-    this.clearInert();
+    this.releaseInertHold();
+    const holders = inertHolders.get(doc) || new Set<SheetController>();
+    holders.add(this);
+    inertHolders.set(doc, holders);
+
     for (const child of Array.from(body.children)) {
       if (!(child instanceof HTMLElement)) continue;
-      this.inertedElements.set(child, { inert: child.inert, ariaHidden: child.getAttribute('aria-hidden') });
-      const isAllowed = Array.from(allowed).some((element) => child === element || child.contains(element));
-      if (isAllowed) {
-        child.inert = false;
-        child.removeAttribute('aria-hidden');
-        continue;
+      const depth = inertDepth.get(child) ?? 0;
+      if (depth === 0) {
+        inertOriginal.set(child, { inert: child.inert, ariaHidden: child.getAttribute('aria-hidden') });
       }
-      child.inert = true;
-      child.setAttribute('aria-hidden', 'true');
+      inertDepth.set(child, depth + 1);
+      this.inertHeldElements.add(child);
+      this.applyInertForElement(child, allowed);
     }
   }
 
   private clearInert(): void {
-    for (const [element, state] of this.inertedElements) {
-      element.inert = state.inert;
-      if (state.ariaHidden === null) {
-        element.removeAttribute('aria-hidden');
+    this.releaseInertHold();
+  }
+
+  private releaseInertHold(): void {
+    if (this.inertHeldElements.size === 0) return;
+
+    const doc = this.root.ownerDocument;
+    const holders = inertHolders.get(doc);
+    holders?.delete(this);
+    if (holders?.size === 0) inertHolders.delete(doc);
+
+    for (const element of this.inertHeldElements) {
+      const depth = Math.max((inertDepth.get(element) ?? 1) - 1, 0);
+      if (depth === 0) {
+        inertDepth.delete(element);
+        const snapshot = inertOriginal.get(element);
+        if (snapshot) {
+          element.inert = snapshot.inert;
+          if (snapshot.ariaHidden === null) {
+            element.removeAttribute('aria-hidden');
+          } else {
+            element.setAttribute('aria-hidden', snapshot.ariaHidden);
+          }
+          inertOriginal.delete(element);
+        }
       } else {
-        element.setAttribute('aria-hidden', state.ariaHidden);
+        inertDepth.set(element, depth);
       }
     }
-    this.inertedElements.clear();
+    this.inertHeldElements.clear();
+    this.reapplyDocumentInert(doc);
+  }
+
+  private reapplyDocumentInert(doc: Document): void {
+    const holders = inertHolders.get(doc);
+    if (!holders?.size) return;
+
+    const top = Array.from(holders)
+      .filter((controller) => controller.presented && controller.options.inertOutside !== false)
+      .sort((left, right) => right.getStackZIndex() - left.getStackZIndex())[0];
+    if (!top) return;
+
+    const allowed = top.getAllowedOutsideElements();
+    const body = doc.body;
+    for (const child of Array.from(body.children)) {
+      if (!(child instanceof HTMLElement)) continue;
+      if ((inertDepth.get(child) ?? 0) === 0) continue;
+      top.applyInertForElement(child, allowed);
+    }
   }
 
   private retainThemeDimmer(): void {
