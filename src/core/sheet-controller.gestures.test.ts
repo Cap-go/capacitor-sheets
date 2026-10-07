@@ -6,8 +6,8 @@ import type { CapSheet } from '../components/cap-sheet';
 type ControllerInternals = {
   nearestDetentForOffset(offsetPx: number, velocity: number): number;
   detentOffsetsPx: number[];
-  releaseVelocity(travel: { samples: Array<{ t: number; pos: number }> }): number;
-  pointerTravel: { samples: Array<{ t: number; pos: number }>; velocity: number } | null;
+  releaseVelocity(travel: { samples: { t: number; pos: number }[] }): number;
+  pointerTravel: { samples: { t: number; pos: number }[]; velocity: number } | null;
 };
 
 function mountSheet(id = 'sheet-a'): CapSheet {
