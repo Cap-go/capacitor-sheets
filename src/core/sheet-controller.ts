@@ -337,6 +337,8 @@ export class SheetController {
   private pendingSettle: SettleMotion | null = null;
   /** Entering completion deferred by a drag that interrupted present(); runs once the sheet settles. */
   private deferredEnteringComplete: (() => void) | null = null;
+  /** Resolves the in-flight present() after entering lifecycle completes or is abandoned. */
+  private settlePresentPromise: (() => void) | null = null;
   private previousFocus: Element | null = null;
   private hasThemeDimmer = false;
   private stackId: string | null = null;
@@ -649,7 +651,7 @@ export class SheetController {
 
     this.previousFocus = this.root.ownerDocument.activeElement;
     this.presented = true;
-    this.deferredEnteringComplete = null;
+    this.abandonDeferredEntering();
     this.activeDetent = clamp(options.detent ?? this.resolveInitialDetent(), 1, this.detentOffsetsPx.length - 1);
     this.updateDetentState();
     this.updateDomState(true);
@@ -659,20 +661,34 @@ export class SheetController {
     this.setStatus('entering');
     dispatch(this.root, 'cap-sheet-present', this.getTravelEvent());
     const source = options.source || 'programmatic';
-    await this.runSettleMotion({
+    let resolvePresent!: () => void;
+    const presentLifecycleSettled = new Promise<void>((resolve) => {
+      resolvePresent = resolve;
+    });
+    this.settlePresentPromise = () => {
+      resolvePresent();
+    };
+
+    const complete = () => {
+      this.setStatus('idle');
+      this.focusInitialElement();
+      this.emitPresentedChange(true, source);
+      this.emitActiveDetentChange(this.activeDetent, 0);
+      this.updateStack();
+      this.releasePresentAwait();
+    };
+
+    const finished = await this.runSettleMotion({
       status: 'entering',
       animation: {
         ...(this.options.enteringAnimationSettings || {}),
         ...(options.animation || {}),
       },
-      complete: () => {
-        this.setStatus('idle');
-        this.focusInitialElement();
-        this.emitPresentedChange(true, source);
-        this.emitActiveDetentChange(this.activeDetent, 0);
-        this.updateStack();
-      },
+      complete,
     });
+    if (!finished) {
+      await presentLifecycleSettled;
+    }
   }
 
   /** Dismiss the sheet. */
@@ -684,7 +700,7 @@ export class SheetController {
     this.presented = false;
     this.activeDetent = 0;
     this.pendingSettle = null;
-    this.deferredEnteringComplete = null;
+    this.abandonDeferredEntering();
     this.updateDetentState();
     this.setStatus('exiting');
     dispatch(this.root, 'cap-sheet-dismiss', this.getTravelEvent());
@@ -755,6 +771,18 @@ export class SheetController {
    * When the motion is cancelled by a pointerdown, the settle stays pending so a tap
    * that never becomes a drag can resume it.
    */
+  private releasePresentAwait(): void {
+    if (!this.settlePresentPromise) return;
+    const settle = this.settlePresentPromise;
+    this.settlePresentPromise = null;
+    settle();
+  }
+
+  private abandonDeferredEntering(): void {
+    this.deferredEnteringComplete = null;
+    this.releasePresentAwait();
+  }
+
   private async runSettleMotion(motion: SettleMotion): Promise<boolean> {
     this.setStatus(motion.status);
     this.pendingSettle = motion;

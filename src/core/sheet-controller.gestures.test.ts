@@ -261,6 +261,81 @@ describe('sheet-controller gesture fixes', () => {
     expect(detentChanges).toEqual([2]);
   });
 
+  it('does not resolve present() until cap-sheet-presented-change after an entering drag interrupt', async () => {
+    const sheet = mountSheet();
+    sheet.controller.connect();
+    const pending = holdAnimations(sheet);
+
+    const lifecycleOrder: string[] = [];
+    const presentPromise = sheet.present({ animation: { duration: 300 } });
+    presentPromise.then(() => {
+      lifecycleOrder.push('present-resolved');
+    });
+    sheet.addEventListener('cap-sheet-presented-change', () => {
+      lifecycleOrder.push('presented-change');
+    });
+
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(sheet.controller.status).toBe('entering');
+    expect(lifecycleOrder).toEqual([]);
+
+    const internals = sheet.controller as unknown as ControllerInternals & { currentOffsetPx: number };
+    internals.currentOffsetPx = 120;
+    const handle = sheet.querySelector('cap-sheet-handle')!;
+    pointer(handle, 'pointerdown', { clientX: 195, clientY: 600 });
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(lifecycleOrder).toEqual([]);
+    pointer(handle, 'pointermove', { clientX: 195, clientY: 500 });
+    pointer(handle, 'pointerup', { clientX: 195, clientY: 500 });
+
+    await Promise.resolve();
+    expect(lifecycleOrder).toEqual([]);
+
+    while (pending.length > 0) {
+      pending.splice(0).forEach((finish) => finish());
+      await vi.runAllTimersAsync();
+    }
+
+    await presentPromise;
+    expect(lifecycleOrder).toEqual(['presented-change', 'present-resolved']);
+  });
+
+  it('resolves an interrupted present() when dismiss() runs during the drag', async () => {
+    const sheet = mountSheet();
+    sheet.controller.connect();
+    const pending = holdAnimations(sheet);
+
+    let presentResolved = false;
+    const presentPromise = sheet.present({ animation: { duration: 300 } });
+    presentPromise.then(() => {
+      presentResolved = true;
+    });
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const internals = sheet.controller as unknown as ControllerInternals & { currentOffsetPx: number };
+    internals.currentOffsetPx = 120;
+    const handle = sheet.querySelector('cap-sheet-handle')!;
+    pointer(handle, 'pointerdown', { clientX: 195, clientY: 600 });
+    await Promise.resolve();
+    await Promise.resolve();
+    pointer(handle, 'pointermove', { clientX: 195, clientY: 700 });
+    expect(presentResolved).toBe(false);
+
+    const dismissPromise = sheet.dismiss({ animation: { duration: 0 } });
+    await presentPromise;
+    expect(presentResolved).toBe(true);
+
+    while (pending.length > 0) {
+      pending.splice(0).forEach((finish) => finish());
+      await vi.runAllTimersAsync();
+    }
+    await dismissPromise;
+  });
+
   it('completes the presentation lifecycle after a drag interrupts entering', async () => {
     const sheet = mountSheet();
     sheet.controller.connect();
