@@ -18,19 +18,24 @@ jobs:
     # Keep this job capped at 10 minutes; never raise it unless explicitly asked.
     timeout-minutes: 10
     steps:
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24.x
       - name: Upsert beta publish comment
         uses: actions/github-script@v9
         env:
           IS_SAME_REPO: ${{ github.event.pull_request.head.repo.full_name == github.repository && 'true' || 'false' }}
         with:
           script: |
+            const core = require('@actions/core');
             const marker = '<!-- pr-beta-publish -->';
-            const sameRepo = process.env.IS_SAME_REPO === 'true';
+            const maintenanceBots = new Set(['renovate[bot]', 'dependabot[bot]']);
             const pr = context.payload.pull_request;
+            const prAuthor = pr.user?.login ?? '';
+
+            if (maintenanceBots.has(prAuthor)) {
+              core.info(`Skipping beta publish prompt for ${prAuthor}.`);
+              return;
+            }
+
+            const sameRepo = process.env.IS_SAME_REPO === 'true';
             const body = sameRepo
               ? [
                   marker,
@@ -47,7 +52,7 @@ jobs:
                   '- update this comment with the install command',
                   '',
                   'Security note: beta publish is only enabled for branches inside this repository.',
-                ].join('\\n')
+                ].join('\n')
               : [
                   marker,
                   '',
@@ -56,31 +61,51 @@ jobs:
                   'This PR comes from a fork, so beta publish is disabled for security.',
                   '',
                   'If you need a beta package, move the branch into this repository first.',
-                ].join('\\n');
+                ].join('\n');
 
-            const { owner, repo } = context.repo;
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              owner,
-              repo,
-              issue_number: pr.number,
-              per_page: 100,
-            });
+            const isBetaPromptComment = (comment) =>
+              comment?.user?.login === 'github-actions[bot]' &&
+              typeof comment.body === 'string' &&
+              comment.body.includes(marker);
 
-            const existing = comments.find((comment) => comment.user.type === 'Bot' && comment.body.includes(marker));
-
-            if (existing) {
-              await github.rest.issues.updateComment({
+            const upsertComment = async () => {
+              const { owner, repo } = context.repo;
+              const comments = await github.paginate(github.rest.issues.listComments, {
                 owner,
                 repo,
-                comment_id: existing.id,
+                issue_number: pr.number,
+                per_page: 100,
+              });
+
+              const existing = comments.find(isBetaPromptComment);
+
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner,
+                  repo,
+                  comment_id: existing.id,
+                  body,
+                });
+                return;
+              }
+
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: pr.number,
                 body,
               });
-              return;
-            }
+            };
 
-            await github.rest.issues.createComment({
-              owner,
-              repo,
-              issue_number: pr.number,
-              body,
-            });
+            try {
+              await upsertComment();
+            } catch (error) {
+              const status = error.status ?? error.response?.status;
+              if (pr.user?.type === 'Bot' || maintenanceBots.has(prAuthor)) {
+                core.warning(
+                  `Could not upsert beta publish comment on bot PR (HTTP ${status ?? 'unknown'}): ${error.message}`,
+                );
+                return;
+              }
+              throw error;
+            }
