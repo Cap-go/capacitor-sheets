@@ -14,6 +14,7 @@ permissions:
 
 jobs:
   comment:
+    if: ${{ github.event.pull_request.user.login != 'renovate[bot]' && github.event.pull_request.user.login != 'dependabot[bot]' }}
     runs-on: ubuntu-latest
     # Keep this job capped at 10 minutes; never raise it unless explicitly asked.
     timeout-minutes: 10
@@ -24,7 +25,6 @@ jobs:
           IS_SAME_REPO: ${{ github.event.pull_request.head.repo.full_name == github.repository && 'true' || 'false' }}
         with:
           script: |
-            const core = require('@actions/core');
             const marker = '<!-- pr-beta-publish -->';
             const maintenanceBots = new Set(['renovate[bot]', 'dependabot[bot]']);
             const pr = context.payload.pull_request;
