@@ -56,6 +56,13 @@ interface PointerTravel {
   velocity: number;
   dragging: boolean;
   samples: { t: number; pos: number }[];
+  interruptedMotion: SettleMotion | null;
+}
+
+interface SettleMotion {
+  status: 'entering' | 'settling';
+  animation: SheetAnimationSettings;
+  complete: () => void;
 }
 
 interface InertElementSnapshot {
@@ -327,6 +334,7 @@ export class SheetController {
   private inertHeldElements = new Set<HTMLElement>();
   private remeasureFrame: number | null = null;
   private activeMotion: { cancel: () => void } | null = null;
+  private pendingSettle: SettleMotion | null = null;
   private previousFocus: Element | null = null;
   private hasThemeDimmer = false;
   private stackId: string | null = null;
@@ -387,6 +395,8 @@ export class SheetController {
     }
 
     this.syncOffsetFromRenderedPosition();
+    const interruptedMotion = this.activeMotion ? this.pendingSettle : null;
+    this.pendingSettle = null;
     this.cancelActiveMotion();
     this.applyOffset(this.currentOffsetPx, this.status);
     this.remeasure();
@@ -403,6 +413,7 @@ export class SheetController {
       velocity: 0,
       dragging: false,
       samples: [{ t: performance.now(), pos: startPos }],
+      interruptedMotion,
     };
   };
 
@@ -452,7 +463,14 @@ export class SheetController {
     }
 
     this.pointerTravel = null;
-    if (!travel.dragging) return;
+    if (!travel.dragging) {
+      // A tap during an entering or settling animation cancelled the motion on pointerdown.
+      // Resume it so the sheet does not stay between detents.
+      if (travel.interruptedMotion && this.presented) {
+        void this.runSettleMotion(travel.interruptedMotion);
+      }
+      return;
+    }
 
     const nearest = this.nearestDetentForOffset(this.currentOffsetPx, this.releaseVelocity(travel));
     dispatch(this.root, 'cap-sheet-drag-end', this.getTravelEvent());
@@ -628,19 +646,21 @@ export class SheetController {
     this.retainThemeDimmer();
     this.setStatus('entering');
     dispatch(this.root, 'cap-sheet-present', this.getTravelEvent());
-    if (
-      !(await this.animateTo(this.detentOffsetsPx[this.activeDetent] || 0, {
+    const source = options.source || 'programmatic';
+    await this.runSettleMotion({
+      status: 'entering',
+      animation: {
         ...(this.options.enteringAnimationSettings || {}),
         ...(options.animation || {}),
-      }))
-    ) {
-      return;
-    }
-    this.setStatus('idle');
-    this.focusInitialElement();
-    this.emitPresentedChange(true, options.source || 'programmatic');
-    this.emitActiveDetentChange(this.activeDetent, 0);
-    this.updateStack();
+      },
+      complete: () => {
+        this.setStatus('idle');
+        this.focusInitialElement();
+        this.emitPresentedChange(true, source);
+        this.emitActiveDetentChange(this.activeDetent, 0);
+        this.updateStack();
+      },
+    });
   }
 
   /** Dismiss the sheet. */
@@ -651,6 +671,7 @@ export class SheetController {
     const previous = this.activeDetent;
     this.presented = false;
     this.activeDetent = 0;
+    this.pendingSettle = null;
     this.updateDetentState();
     this.setStatus('exiting');
     dispatch(this.root, 'cap-sheet-dismiss', this.getTravelEvent());
@@ -694,19 +715,34 @@ export class SheetController {
     const previous = this.activeDetent;
     this.activeDetent = target;
     this.updateDetentState();
-    this.setStatus('settling');
-    if (
-      !(await this.animateTo(this.detentOffsetsPx[target] || 0, {
+    await this.runSettleMotion({
+      status: 'settling',
+      animation: {
         ...(this.options.steppingAnimationSettings || {}),
         ...(options.animation || {}),
-      }))
-    ) {
-      return;
-    }
-    this.setStatus('idle');
-    if (previous !== target) {
-      this.emitActiveDetentChange(target, previous);
-    }
+      },
+      complete: () => {
+        this.setStatus('idle');
+        if (previous !== target) {
+          this.emitActiveDetentChange(target, previous);
+        }
+      },
+    });
+  }
+
+  /**
+   * Animate to the active detent and run the completion once the motion finishes.
+   * When the motion is cancelled by a pointerdown, the settle stays pending so a tap
+   * that never becomes a drag can resume it.
+   */
+  private async runSettleMotion(motion: SettleMotion): Promise<boolean> {
+    this.setStatus(motion.status);
+    this.pendingSettle = motion;
+    const finished = await this.animateTo(this.detentOffsetsPx[this.activeDetent] || 0, motion.animation);
+    if (!finished) return false;
+    if (this.pendingSettle === motion) this.pendingSettle = null;
+    motion.complete();
+    return true;
   }
 
   /** Step up or down one detent. */

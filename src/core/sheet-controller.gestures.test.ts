@@ -75,6 +75,23 @@ function toEmOffset(sheet: CapSheet, offsetPx: number): number {
   return offsetPx / emPx;
 }
 
+function holdAnimations(sheet: CapSheet): (() => void)[] {
+  const pending: (() => void)[] = [];
+  const hold = (): Animation => {
+    let resolve: () => void = () => undefined;
+    const finished = new Promise<void>((done) => {
+      resolve = done;
+    });
+    pending.push(() => resolve());
+    return { finished, cancel: () => resolve() } as unknown as Animation;
+  };
+  for (const selector of ['cap-sheet-content', 'cap-sheet-backdrop']) {
+    const element = sheet.querySelector(selector) as HTMLElement;
+    Object.defineProperty(element, 'animate', { configurable: true, value: hold });
+  }
+  return pending;
+}
+
 beforeAll(() => {
   if (!HTMLElement.prototype.animate) {
     HTMLElement.prototype.animate = vi.fn(() => ({
@@ -179,6 +196,69 @@ describe('sheet-controller gesture fixes', () => {
     expect(Number(sheet.controller.getTravelEvent().offset)).toBeCloseTo(toEmOffset(sheet, renderedOffsetPx + 20), 1);
 
     computedStyleSpy.mockRestore();
+  });
+
+  it('resumes an interrupted entering animation when a tap does not become a drag', async () => {
+    const sheet = mountSheet();
+    sheet.controller.connect();
+
+    const pending = holdAnimations(sheet);
+
+    const presentedChanges: boolean[] = [];
+    sheet.addEventListener('cap-sheet-presented-change', (event) => {
+      presentedChanges.push(Boolean((event as CustomEvent<{ presented: boolean }>).detail.presented));
+    });
+
+    void sheet.present({ animation: { duration: 300 } });
+    expect(sheet.controller.status).toBe('entering');
+
+    const handle = sheet.querySelector('cap-sheet-handle')!;
+    pointer(handle, 'pointerdown', { clientX: 195, clientY: 600 });
+    await Promise.resolve();
+    await Promise.resolve();
+    pointer(handle, 'pointerup', { clientX: 195, clientY: 602 });
+    expect(sheet.controller.status).toBe('entering');
+
+    pending.splice(0).forEach((finish) => finish());
+    await vi.runAllTimersAsync();
+
+    const internals = sheet.controller as unknown as ControllerInternals & { currentOffsetPx: number };
+    expect(sheet.controller.status).toBe('idle');
+    expect(internals.currentOffsetPx).toBeCloseTo(internals.detentOffsetsPx[sheet.controller.activeDetent] || 0, 3);
+    expect(presentedChanges).toEqual([true]);
+  });
+
+  it('resumes an interrupted settling animation when a tap does not become a drag', async () => {
+    const sheet = mountSheet();
+    sheet.setAttribute('detents', '200px 400px');
+    sheet.controller.connect();
+    await sheet.present({ animation: { duration: 0 }, detent: 1 });
+
+    const pending = holdAnimations(sheet);
+
+    const detentChanges: number[] = [];
+    sheet.addEventListener('cap-sheet-active-detent-change', (event) => {
+      detentChanges.push(Number((event as CustomEvent<{ activeDetent: number }>).detail.activeDetent));
+    });
+
+    void sheet.controller.stepTo(2, { animation: { duration: 300 } });
+    expect(sheet.controller.status).toBe('settling');
+
+    const handle = sheet.querySelector('cap-sheet-handle')!;
+    pointer(handle, 'pointerdown', { clientX: 195, clientY: 600 });
+    await Promise.resolve();
+    await Promise.resolve();
+    pointer(handle, 'pointerup', { clientX: 195, clientY: 601 });
+    expect(sheet.controller.status).toBe('settling');
+
+    pending.splice(0).forEach((finish) => finish());
+    await vi.runAllTimersAsync();
+
+    const internals = sheet.controller as unknown as ControllerInternals & { currentOffsetPx: number };
+    expect(sheet.controller.status).toBe('idle');
+    expect(sheet.controller.activeDetent).toBe(2);
+    expect(internals.currentOffsetPx).toBeCloseTo(internals.detentOffsetsPx[2] || 0, 3);
+    expect(detentChanges).toEqual([2]);
   });
 
   it('restores page interactivity after overlapping present and dismiss', async () => {
