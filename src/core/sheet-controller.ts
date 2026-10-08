@@ -335,6 +335,8 @@ export class SheetController {
   private remeasureFrame: number | null = null;
   private activeMotion: { cancel: () => void } | null = null;
   private pendingSettle: SettleMotion | null = null;
+  /** Entering completion deferred by a drag that interrupted present(); runs once the sheet settles. */
+  private deferredEnteringComplete: (() => void) | null = null;
   private previousFocus: Element | null = null;
   private hasThemeDimmer = false;
   private stackId: string | null = null;
@@ -390,6 +392,9 @@ export class SheetController {
     if (!this.presented || this.options.swipe === false || this.options.contentPlacement === 'center') return;
     if (!(event.target instanceof Element)) return;
     if (!this.parts.content?.contains(event.target) && event.target !== this.parts.backdrop) return;
+    // Additional pointers do not replace the gesture in progress (and its interrupted motion).
+    // A new primary pointer means every earlier pointer was lifted, so it starts a fresh gesture.
+    if (this.pointerTravel && !event.isPrimary) return;
     if (this.options.nativeEdgeSwipePrevention !== false && this.isNativeEdgePointer(event)) {
       event.preventDefault();
     }
@@ -474,6 +479,12 @@ export class SheetController {
 
     const nearest = this.nearestDetentForOffset(this.currentOffsetPx, this.releaseVelocity(travel));
     dispatch(this.root, 'cap-sheet-drag-end', this.getTravelEvent());
+
+    // A drag that interrupted present() still owes the presentation lifecycle
+    // (idle status, focus, presented and detent change events) once the sheet settles.
+    if (travel.interruptedMotion?.status === 'entering') {
+      this.deferredEnteringComplete = travel.interruptedMotion.complete;
+    }
 
     if (nearest === 0 && this.options.swipeDismissal !== false) {
       void this.dismiss({ source: 'gesture' });
@@ -638,6 +649,7 @@ export class SheetController {
 
     this.previousFocus = this.root.ownerDocument.activeElement;
     this.presented = true;
+    this.deferredEnteringComplete = null;
     this.activeDetent = clamp(options.detent ?? this.resolveInitialDetent(), 1, this.detentOffsetsPx.length - 1);
     this.updateDetentState();
     this.updateDomState(true);
@@ -672,6 +684,7 @@ export class SheetController {
     this.presented = false;
     this.activeDetent = 0;
     this.pendingSettle = null;
+    this.deferredEnteringComplete = null;
     this.updateDetentState();
     this.setStatus('exiting');
     dispatch(this.root, 'cap-sheet-dismiss', this.getTravelEvent());
@@ -722,6 +735,13 @@ export class SheetController {
         ...(options.animation || {}),
       },
       complete: () => {
+        const enteringComplete = this.deferredEnteringComplete;
+        if (enteringComplete) {
+          // Finish the interrupted presentation instead; it emits the detent change from 0.
+          this.deferredEnteringComplete = null;
+          enteringComplete();
+          return;
+        }
         this.setStatus('idle');
         if (previous !== target) {
           this.emitActiveDetentChange(target, previous);

@@ -261,6 +261,71 @@ describe('sheet-controller gesture fixes', () => {
     expect(detentChanges).toEqual([2]);
   });
 
+  it('completes the presentation lifecycle after a drag interrupts entering', async () => {
+    const sheet = mountSheet();
+    sheet.controller.connect();
+    const pending = holdAnimations(sheet);
+
+    const presentedChanges: boolean[] = [];
+    const detentChanges: number[] = [];
+    sheet.addEventListener('cap-sheet-presented-change', (event) => {
+      presentedChanges.push(Boolean((event as CustomEvent<{ presented: boolean }>).detail.presented));
+    });
+    sheet.addEventListener('cap-sheet-active-detent-change', (event) => {
+      detentChanges.push(Number((event as CustomEvent<{ activeDetent: number }>).detail.activeDetent));
+    });
+
+    void sheet.present({ animation: { duration: 300 } });
+    expect(sheet.controller.status).toBe('entering');
+
+    const internals = sheet.controller as unknown as ControllerInternals & { currentOffsetPx: number };
+    internals.currentOffsetPx = 120;
+    const handle = sheet.querySelector('cap-sheet-handle')!;
+    pointer(handle, 'pointerdown', { clientX: 195, clientY: 600 });
+    await Promise.resolve();
+    await Promise.resolve();
+    pointer(handle, 'pointermove', { clientX: 195, clientY: 560 });
+    pointer(handle, 'pointermove', { clientX: 195, clientY: 500 });
+    pointer(handle, 'pointerup', { clientX: 195, clientY: 500 });
+    expect(sheet.controller.status).toBe('settling');
+
+    while (pending.length > 0) {
+      pending.splice(0).forEach((finish) => finish());
+      await vi.runAllTimersAsync();
+    }
+
+    expect(sheet.controller.status).toBe('idle');
+    expect(sheet.controller.presented).toBe(true);
+    expect(sheet.controller.activeDetent).toBeGreaterThan(0);
+    expect(presentedChanges).toEqual([true]);
+    expect(detentChanges).toEqual([sheet.controller.activeDetent]);
+  });
+
+  it('keeps the first pointer gesture when a second pointer goes down during a tap', async () => {
+    const sheet = mountSheet();
+    sheet.controller.connect();
+    const pending = holdAnimations(sheet);
+
+    void sheet.present({ animation: { duration: 300 } });
+    const handle = sheet.querySelector('cap-sheet-handle')!;
+    pointer(handle, 'pointerdown', { clientX: 195, clientY: 600, pointerId: 1, isPrimary: true });
+    await Promise.resolve();
+    await Promise.resolve();
+    pointer(handle, 'pointerdown', { clientX: 120, clientY: 620, pointerId: 2, isPrimary: false });
+    pointer(handle, 'pointerup', { clientX: 120, clientY: 620, pointerId: 2, isPrimary: false });
+    pointer(handle, 'pointerup', { clientX: 195, clientY: 601, pointerId: 1, isPrimary: true });
+    expect(sheet.controller.status).toBe('entering');
+
+    while (pending.length > 0) {
+      pending.splice(0).forEach((finish) => finish());
+      await vi.runAllTimersAsync();
+    }
+
+    const internals = sheet.controller as unknown as ControllerInternals & { currentOffsetPx: number };
+    expect(sheet.controller.status).toBe('idle');
+    expect(internals.currentOffsetPx).toBeCloseTo(internals.detentOffsetsPx[sheet.controller.activeDetent] || 0, 3);
+  });
+
   it('restores page interactivity after overlapping present and dismiss', async () => {
     const sheetA = mountSheet('sheet-a');
     const sheetB = mountSheet('sheet-b');
