@@ -38,4 +38,4 @@ jobs:
         run: bun run build
       - name: Verify
         id: verify_code
-        run: bun run verify:web
+        run: bun run verify
