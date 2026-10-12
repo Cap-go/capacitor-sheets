@@ -21,7 +21,7 @@
   </p>
 </div>
 
-> 🤖 **Building with an AI coding agent?** Install [Capgo skills](https://capgo.app/skills/?ref=plugin_sheets) so Claude Code, Codex, Cursor, Copilot, or Gemini CLI know how to install and use `@capgo/capacitor-sheets` in your Capacitor app: `npx skills add Cap-go/capgo-skills`. Then ask your agent: *"Add @capgo/capacitor-sheets to my Capacitor app and wire it up."* [Agent setup guides](https://capgo.app/agents/?ref=plugin_sheets) · [Hosted MCP](https://capgo.app/docs/ai/mcp/?ref=plugin_sheets)
+> 🤖 **Building with an AI coding agent?** Install [Capgo skills](https://capgo.app/skills/?ref=plugin_sheets) so Claude Code, Codex, Cursor, Copilot, or Gemini CLI know how to install and use `@capgo/capacitor-sheets` in your Capacitor app: `npx skills add Cap-go/capgo-skills`. Then ask your agent: _"Add @capgo/capacitor-sheets to my Capacitor app and wire it up."_ [Agent setup guides](https://capgo.app/agents/?ref=plugin_sheets) · [Hosted MCP](https://capgo.app/docs/ai/mcp/?ref=plugin_sheets)
 
 Framework-agnostic sheets, drawers, dialogs, scroll helpers, and overlay primitives for Capacitor apps.
 
