@@ -3,7 +3,7 @@
 <a href="https://capgo.app/?ref=plugin_sheets">
   <img
     src="https://capgo.app/readme-banner.svg?repo=Cap-go/capacitor-sheets"
-    alt="Capgo - Instant updates for Capacitor"
+    alt="Capgo - Build Capacitor apps with AI, ship updates instantly"
   />
 </a>
 
@@ -20,6 +20,8 @@
     <a href="https://capgo.app/consulting/?ref=plugin_sheets">Missing a feature? We'll build the plugin for you 💪</a>
   </p>
 </div>
+
+> 🤖 **Building with an AI coding agent?** Install [Capgo skills](https://capgo.app/skills/?ref=plugin_sheets) so Claude Code, Codex, Cursor, Copilot, or Gemini CLI know how to install and use `@capgo/capacitor-sheets` in your Capacitor app: `npx skills add Cap-go/capgo-skills`. Then ask your agent: _"Add @capgo/capacitor-sheets to my Capacitor app and wire it up."_ [Agent setup guides](https://capgo.app/agents/?ref=plugin_sheets) · [Hosted MCP](https://capgo.app/docs/ai/mcp/?ref=plugin_sheets)
 
 Framework-agnostic sheets, drawers, dialogs, scroll helpers, and overlay primitives for Capacitor apps.
 
