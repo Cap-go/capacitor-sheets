@@ -29,7 +29,7 @@ This package is inspired by the public Silk feature surface, but it is not a wra
 
 ## Usecase Demos
 
-Each usecase has its own animated WebP demo. These match the public Silk-style example set: long sheets, detents, sidebars, bottom/top sheets, keyboard-aware sheets, toasts, detached sheets, full pages, stacking, depth, parallax, lightboxes, persistent detents, and cards.
+Each usecase has its own animated WebP demo. These match the public Silk-style example set: long sheets, detents, sidebars, bottom/top sheets, keyboard-aware sheets, toasts, detached sheets, full pages, stacking, depth, parallax, lightboxes, persistent detents, and cards..
 
 <table>
   <tr>
