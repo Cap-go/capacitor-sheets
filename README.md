@@ -24,6 +24,17 @@ Framework-agnostic sheets, drawers, dialogs, scroll helpers, and overlay primiti
 
 This package is inspired by the public Silk feature surface, but it is not a wrapper around Silk and does not include Silk source code. It uses platform web APIs and custom elements so the same primitives work in React, Vue, Angular, Svelte, Solid, or plain TypeScript.
 
+## Built and maintained with AI
+
+We build, improve and fix our plugins with heavy use of AI. Capgo the product is mostly AI-optional for you; the AI is our own engineering system, and the speed it gives us is part of what you pay for.
+
+- Most plugin issues get a fix pull request the same day, often within a couple of hours, and are usually resolved in one to two days.
+- Every pull request is reviewed automatically by our AI review system, usually within minutes.
+- Our AI pre-checks tests, code review, conventions and security, then a human validates and merges.
+- In the last 90 days, 95% of plugin issues were resolved.
+
+[Learn more about how we build with AI](https://capgo.app/docs/plugins/ai-engineering/)
+
 ## Usecase Demos
 
 Each usecase has its own animated WebP demo. These match the public Silk-style example set: long sheets, detents, sidebars, bottom/top sheets, keyboard-aware sheets, toasts, detached sheets, full pages, stacking, depth, parallax, lightboxes, persistent detents, and cards..
