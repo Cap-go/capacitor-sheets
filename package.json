@@ -38,8 +38,7 @@
     }
   },
   "files": [
-    "dist",
-    "docs"
+    "dist"
   ],
   "engines": {
     "node": ">=22.0.0"

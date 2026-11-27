@@ -43,96 +43,138 @@ Each usecase has its own animated WebP demo. These match the public Silk-style e
 <table>
   <tr>
     <td>
-      <img src="./docs/demos/long-sheet.webp" alt="Long Sheet demo" />
+      <img
+        src="https://raw.githubusercontent.com/Cap-go/capacitor-sheets/main/docs/demos/long-sheet.webp"
+        alt="Long Sheet demo"
+      />
       <br />
       <strong>Long Sheet</strong>
     </td>
     <td>
-      <img src="./docs/demos/sheet-with-detent.webp" alt="Sheet with Detent demo" />
+      <img
+        src="https://raw.githubusercontent.com/Cap-go/capacitor-sheets/main/docs/demos/sheet-with-detent.webp"
+        alt="Sheet with Detent demo"
+      />
       <br />
       <strong>Sheet with Detent</strong>
     </td>
   </tr>
   <tr>
     <td>
-      <img src="./docs/demos/sidebar.webp" alt="Sidebar demo" />
+      <img
+        src="https://raw.githubusercontent.com/Cap-go/capacitor-sheets/main/docs/demos/sidebar.webp"
+        alt="Sidebar demo"
+      />
       <br />
       <strong>Sidebar</strong>
     </td>
     <td>
-      <img src="./docs/demos/bottom-sheet.webp" alt="Bottom Sheet demo" />
+      <img
+        src="https://raw.githubusercontent.com/Cap-go/capacitor-sheets/main/docs/demos/bottom-sheet.webp"
+        alt="Bottom Sheet demo"
+      />
       <br />
       <strong>Bottom Sheet</strong>
     </td>
   </tr>
   <tr>
     <td>
-      <img src="./docs/demos/sheet-with-keyboard.webp" alt="Sheet with Keyboard demo" />
+      <img
+        src="https://raw.githubusercontent.com/Cap-go/capacitor-sheets/main/docs/demos/sheet-with-keyboard.webp"
+        alt="Sheet with Keyboard demo"
+      />
       <br />
       <strong>Sheet with Keyboard</strong>
     </td>
     <td>
-      <img src="./docs/demos/toast.webp" alt="Toast demo" />
+      <img
+        src="https://raw.githubusercontent.com/Cap-go/capacitor-sheets/main/docs/demos/toast.webp"
+        alt="Toast demo"
+      />
       <br />
       <strong>Toast</strong>
     </td>
   </tr>
   <tr>
     <td>
-      <img src="./docs/demos/detached-sheet.webp" alt="Detached Sheet demo" />
+      <img
+        src="https://raw.githubusercontent.com/Cap-go/capacitor-sheets/main/docs/demos/detached-sheet.webp"
+        alt="Detached Sheet demo"
+      />
       <br />
       <strong>Detached Sheet</strong>
     </td>
     <td>
-      <img src="./docs/demos/page-from-bottom.webp" alt="Page from Bottom demo" />
+      <img
+        src="https://raw.githubusercontent.com/Cap-go/capacitor-sheets/main/docs/demos/page-from-bottom.webp"
+        alt="Page from Bottom demo"
+      />
       <br />
       <strong>Page from Bottom</strong>
     </td>
   </tr>
   <tr>
     <td>
-      <img src="./docs/demos/top-sheet.webp" alt="Top Sheet demo" />
+      <img
+        src="https://raw.githubusercontent.com/Cap-go/capacitor-sheets/main/docs/demos/top-sheet.webp"
+        alt="Top Sheet demo"
+      />
       <br />
       <strong>Top Sheet</strong>
     </td>
     <td>
-      <img src="./docs/demos/sheet-with-stacking.webp" alt="Sheet with Stacking demo" />
+      <img
+        src="https://raw.githubusercontent.com/Cap-go/capacitor-sheets/main/docs/demos/sheet-with-stacking.webp"
+        alt="Sheet with Stacking demo"
+      />
       <br />
       <strong>Sheet with Stacking</strong>
     </td>
   </tr>
   <tr>
     <td>
-      <img src="./docs/demos/sheet-with-depth.webp" alt="Sheet with Depth demo" />
+      <img
+        src="https://raw.githubusercontent.com/Cap-go/capacitor-sheets/main/docs/demos/sheet-with-depth.webp"
+        alt="Sheet with Depth demo"
+      />
       <br />
       <strong>Sheet with Depth</strong>
     </td>
     <td>
-      <img src="./docs/demos/parallax-page.webp" alt="Parallax Page demo" />
+      <img
+        src="https://raw.githubusercontent.com/Cap-go/capacitor-sheets/main/docs/demos/parallax-page.webp"
+        alt="Parallax Page demo"
+      />
       <br />
       <strong>Parallax Page</strong>
     </td>
   </tr>
   <tr>
     <td>
-      <img src="./docs/demos/page.webp" alt="Page demo" />
+      <img src="https://raw.githubusercontent.com/Cap-go/capacitor-sheets/main/docs/demos/page.webp" alt="Page demo" />
       <br />
       <strong>Page</strong>
     </td>
     <td>
-      <img src="./docs/demos/lightbox.webp" alt="Lightbox demo" />
+      <img
+        src="https://raw.githubusercontent.com/Cap-go/capacitor-sheets/main/docs/demos/lightbox.webp"
+        alt="Lightbox demo"
+      />
       <br />
       <strong>Lightbox</strong>
     </td>
   </tr>
   <tr>
     <td>
-      <img src="./docs/demos/persistent-sheet-with-detent.webp" alt="Persistent Sheet with Detent demo" />
+      <img
+        src="https://raw.githubusercontent.com/Cap-go/capacitor-sheets/main/docs/demos/persistent-sheet-with-detent.webp"
+        alt="Persistent Sheet with Detent demo"
+      />
       <br />
       <strong>Persistent Sheet with Detent</strong>
     </td>
     <td>
-      <img src="./docs/demos/card.webp" alt="Card demo" />
+      <img src="https://raw.githubusercontent.com/Cap-go/capacitor-sheets/main/docs/demos/card.webp" alt="Card demo" />
       <br />
       <strong>Card</strong>
     </td>
