@@ -3,7 +3,7 @@ import { defineConfig } from 'tsup';
 export default defineConfig([
   {
     entry: ['src/index.ts'],
-    format: ['cjs', 'esm'],
+    format: ['esm'],
     dts: true,
     clean: true,
     sourcemap: true,
@@ -11,7 +11,7 @@ export default defineConfig([
   {
     entry: ['src/react/index.ts'],
     outDir: 'dist/react',
-    format: ['cjs', 'esm'],
+    format: ['esm'],
     dts: true,
     sourcemap: true,
     external: ['react', 'react-dom'],
@@ -19,7 +19,7 @@ export default defineConfig([
   {
     entry: ['src/vue/index.ts'],
     outDir: 'dist/vue',
-    format: ['cjs', 'esm'],
+    format: ['esm'],
     dts: true,
     sourcemap: true,
     external: ['vue'],
@@ -27,7 +27,7 @@ export default defineConfig([
   {
     entry: ['src/angular/index.ts'],
     outDir: 'dist/angular',
-    format: ['cjs', 'esm'],
+    format: ['esm'],
     dts: true,
     sourcemap: true,
     external: ['@angular/core'],
@@ -35,7 +35,7 @@ export default defineConfig([
   {
     entry: ['src/svelte/index.ts'],
     outDir: 'dist/svelte',
-    format: ['cjs', 'esm'],
+    format: ['esm'],
     dts: true,
     sourcemap: true,
     external: ['svelte'],
@@ -43,7 +43,7 @@ export default defineConfig([
   {
     entry: ['src/solid/index.ts'],
     outDir: 'dist/solid',
-    format: ['cjs', 'esm'],
+    format: ['esm'],
     dts: true,
     sourcemap: true,
     external: ['solid-js'],
