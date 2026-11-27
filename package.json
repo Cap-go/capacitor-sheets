@@ -1,6 +1,6 @@
 {
   "name": "@capgo/capacitor-sheets",
-  "version": "8.2.13",
+  "version": "8.3.0",
   "description": "Framework-agnostic swipeable sheets, drawers, dialogs, and scroll primitives for Capacitor apps",
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
