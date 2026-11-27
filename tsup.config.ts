@@ -1,9 +1,13 @@
 import { defineConfig } from 'tsup';
 
+// package.json declares "type": "module"; keep the shipped .mjs names (tsup names the .d.ts from "type" and ignores outExtension for it).
+const outExtension = () => ({ js: '.mjs' });
+
 export default defineConfig([
   {
     entry: ['src/index.ts'],
     format: ['esm'],
+    outExtension,
     dts: true,
     clean: true,
     sourcemap: true,
@@ -12,6 +16,7 @@ export default defineConfig([
     entry: ['src/react/index.ts'],
     outDir: 'dist/react',
     format: ['esm'],
+    outExtension,
     dts: true,
     sourcemap: true,
     external: ['react', 'react-dom'],
@@ -20,6 +25,7 @@ export default defineConfig([
     entry: ['src/vue/index.ts'],
     outDir: 'dist/vue',
     format: ['esm'],
+    outExtension,
     dts: true,
     sourcemap: true,
     external: ['vue'],
@@ -28,6 +34,7 @@ export default defineConfig([
     entry: ['src/angular/index.ts'],
     outDir: 'dist/angular',
     format: ['esm'],
+    outExtension,
     dts: true,
     sourcemap: true,
     external: ['@angular/core'],
@@ -36,6 +43,7 @@ export default defineConfig([
     entry: ['src/svelte/index.ts'],
     outDir: 'dist/svelte',
     format: ['esm'],
+    outExtension,
     dts: true,
     sourcemap: true,
     external: ['svelte'],
@@ -44,6 +52,7 @@ export default defineConfig([
     entry: ['src/solid/index.ts'],
     outDir: 'dist/solid',
     format: ['esm'],
+    outExtension,
     dts: true,
     sourcemap: true,
     external: ['solid-js'],

@@ -2,32 +2,33 @@
   "name": "@capgo/capacitor-sheets",
   "version": "8.3.0",
   "description": "Framework-agnostic swipeable sheets, drawers, dialogs, and scroll primitives for Capacitor apps",
+  "type": "module",
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
-  "types": "dist/index.d.mts",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.mts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
     },
     "./react": {
-      "types": "./dist/react/index.d.mts",
+      "types": "./dist/react/index.d.ts",
       "import": "./dist/react/index.mjs"
     },
     "./vue": {
-      "types": "./dist/vue/index.d.mts",
+      "types": "./dist/vue/index.d.ts",
       "import": "./dist/vue/index.mjs"
     },
     "./angular": {
-      "types": "./dist/angular/index.d.mts",
+      "types": "./dist/angular/index.d.ts",
       "import": "./dist/angular/index.mjs"
     },
     "./svelte": {
-      "types": "./dist/svelte/index.d.mts",
+      "types": "./dist/svelte/index.d.ts",
       "import": "./dist/svelte/index.mjs"
     },
     "./solid": {
-      "types": "./dist/solid/index.d.mts",
+      "types": "./dist/solid/index.d.ts",
       "import": "./dist/solid/index.mjs"
     },
     "./package.json": "./package.json"
@@ -41,6 +42,7 @@
   "scripts": {
     "build": "bun run check:esm-imports && tsup",
     "check:esm-imports": "node scripts/check-esm-imports.mjs",
+    "check:esm-package": "node scripts/check-esm-package.mjs --dom",
     "dev": "tsup --watch",
     "dev:examples": "bun scripts/dev-frameworks.ts",
     "dev:examples:all": "bun scripts/dev-frameworks.ts --all",
@@ -64,7 +66,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "verify": "bun run verify:web && bun run test",
-    "verify:web": "bun run build && bun run typecheck",
+    "verify:web": "bun run build && bun run typecheck && bun run check:esm-package",
     "verify:mobile": "bun run build:mobile",
     "lint": "bun run eslint && bun run prettier -- --check",
     "fmt": "bun run eslint -- --fix && bun run prettier -- --write",
