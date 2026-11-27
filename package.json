@@ -39,7 +39,8 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "bun run check:esm-imports && tsup",
+    "check:esm-imports": "node scripts/check-esm-imports.mjs",
     "dev": "tsup --watch",
     "dev:examples": "bun scripts/dev-frameworks.ts",
     "dev:examples:all": "bun scripts/dev-frameworks.ts --all",

@@ -1,8 +1,8 @@
-import { defineElement } from '../core/utils';
+import { defineElement } from '../core/utils.js';
 
-import { CapScroll, CapScrollContent } from './cap-scroll';
-import { CapSheet } from './cap-sheet';
-import { CapSheetTrigger, CapSheetHandle } from './sheet-actions';
+import { CapScroll, CapScrollContent } from './cap-scroll.js';
+import { CapSheet } from './cap-sheet.js';
+import { CapSheetTrigger, CapSheetHandle } from './sheet-actions.js';
 import {
   CapExternalOverlay,
   CapFixed,
@@ -12,7 +12,7 @@ import {
   CapSheetSpecialWrapperContent,
   CapSheetStack,
   CapVisuallyHidden,
-} from './sheet-context';
+} from './sheet-context.js';
 import {
   CapAutoFocusTarget,
   CapSheetBackdrop,
@@ -21,8 +21,8 @@ import {
   CapSheetDescription,
   CapSheetTitle,
   CapSheetView,
-} from './sheet-parts';
-import { CapSheetPortal } from './sheet-portal';
+} from './sheet-parts.js';
+import { CapSheetPortal } from './sheet-portal.js';
 
 defineElement('cap-sheet', CapSheet);
 defineElement('cap-sheet-trigger', CapSheetTrigger);

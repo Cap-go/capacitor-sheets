@@ -1,6 +1,6 @@
-import { injectCapSheetStyles } from '../core/styles';
+import { injectCapSheetStyles } from '../core/styles.js';
 
-import { getSheetFromElement } from './cap-sheet';
+import { getSheetFromElement } from './cap-sheet.js';
 
 type Action = 'present' | 'dismiss' | 'toggle' | 'step';
 

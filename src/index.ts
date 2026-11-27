@@ -6,7 +6,7 @@
  * works in React, Vue, Angular, Svelte, Solid, or plain TypeScript.
  */
 
-import './components';
+import './components/index.js';
 
 import type {
   CapAutoFocusTarget,
@@ -30,12 +30,12 @@ import type {
   CapSheetTrigger,
   CapSheetView,
   CapVisuallyHidden,
-} from './components';
+} from './components/index.js';
 
-export { injectCapSheetStyles, CAP_SHEETS_CSS } from './core/styles';
-export { updateThemeColor } from './core/theme-color';
-export { SheetController } from './core/sheet-controller';
-export { applySheetOptions, getSheetFromElement } from './components/cap-sheet';
+export { injectCapSheetStyles, CAP_SHEETS_CSS } from './core/styles.js';
+export { updateThemeColor } from './core/theme-color.js';
+export { SheetController } from './core/sheet-controller.js';
+export { applySheetOptions, getSheetFromElement } from './components/cap-sheet.js';
 export {
   CapAutoFocusTarget,
   CapExternalOverlay,
@@ -58,7 +58,7 @@ export {
   CapSheetTrigger,
   CapSheetView,
   CapVisuallyHidden,
-} from './components';
+} from './components/index.js';
 export type {
   ScrollByTravelOptions,
   ScrollController,
@@ -80,13 +80,13 @@ export type {
   SheetTravelStatus,
   SheetTravelStatusChangeEvent,
   SheetTriggerAction,
-} from './core/types';
+} from './core/types.js';
 
 /** Initialize all custom elements and structural styles. */
 export function initCapSheets(): void {
-  import('./components');
+  import('./components/index.js');
   if (typeof document !== 'undefined') {
-    import('./core/styles').then(({ injectCapSheetStyles }) => injectCapSheetStyles(document));
+    import('./core/styles.js').then(({ injectCapSheetStyles }) => injectCapSheetStyles(document));
   }
 }
 

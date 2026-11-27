@@ -1,7 +1,7 @@
-import { readOptionsFromElement, SheetController } from '../core/sheet-controller';
-import { injectCapSheetStyles } from '../core/styles';
-import type { SheetAnimationSettings, SheetInsetValue, SheetOptions } from '../core/types';
-import { parseBoolean } from '../core/utils';
+import { readOptionsFromElement, SheetController } from '../core/sheet-controller.js';
+import { injectCapSheetStyles } from '../core/styles.js';
+import type { SheetAnimationSettings, SheetInsetValue, SheetOptions } from '../core/types.js';
+import { parseBoolean } from '../core/utils.js';
 
 const observed = [
   'active-detent',

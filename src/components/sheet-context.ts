@@ -1,7 +1,7 @@
-import { injectCapSheetStyles } from '../core/styles';
-import type { SheetProgressAnimation } from '../core/types';
+import { injectCapSheetStyles } from '../core/styles.js';
+import type { SheetProgressAnimation } from '../core/types.js';
 
-import { getSheetFromElement } from './cap-sheet';
+import { getSheetFromElement } from './cap-sheet.js';
 
 /** Host element that identifies a sheet stack. */
 export class CapSheetStack extends HTMLElement {
