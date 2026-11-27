@@ -41,6 +41,7 @@
   "scripts": {
     "build": "bun run check:esm-imports && tsup",
     "check:esm-imports": "node scripts/check-esm-imports.mjs",
+    "check:esm-package": "node scripts/check-esm-package.mjs --dom",
     "dev": "tsup --watch",
     "dev:examples": "bun scripts/dev-frameworks.ts",
     "dev:examples:all": "bun scripts/dev-frameworks.ts --all",
@@ -64,7 +65,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "verify": "bun run verify:web && bun run test",
-    "verify:web": "bun run build && bun run typecheck",
+    "verify:web": "bun run build && bun run typecheck && bun run check:esm-package",
     "verify:mobile": "bun run build:mobile",
     "lint": "bun run eslint && bun run prettier -- --check",
     "fmt": "bun run eslint -- --fix && bun run prettier -- --write",
