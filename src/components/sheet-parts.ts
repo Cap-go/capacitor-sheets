@@ -1,7 +1,7 @@
-import { injectCapSheetStyles } from '../core/styles';
-import { createId } from '../core/utils';
+import { injectCapSheetStyles } from '../core/styles.js';
+import { createId } from '../core/utils.js';
 
-import { getSheetFromElement } from './cap-sheet';
+import { getSheetFromElement } from './cap-sheet.js';
 
 abstract class SheetPartElement extends HTMLElement {
   abstract readonly partName: 'view' | 'backdrop' | 'content' | 'title' | 'description' | 'autoFocusTarget';

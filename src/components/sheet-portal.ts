@@ -1,7 +1,7 @@
-import { injectCapSheetStyles } from '../core/styles';
-import { createId } from '../core/utils';
+import { injectCapSheetStyles } from '../core/styles.js';
+import { createId } from '../core/utils.js';
 
-import type { CapSheet } from './cap-sheet';
+import type { CapSheet } from './cap-sheet.js';
 
 /** Optional portal wrapper. Set `disabled` to keep children in place. */
 export class CapSheetPortal extends HTMLElement {

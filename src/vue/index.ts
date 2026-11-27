@@ -1,6 +1,6 @@
-import '../components';
+import '../components/index.js';
 
-import { applySheetOptions } from '../components/cap-sheet';
+import { applySheetOptions } from '../components/cap-sheet.js';
 import type {
   SheetActiveDetentChangeEvent,
   SheetContainerOffset,
@@ -10,7 +10,7 @@ import type {
   SheetSafeAreaEdge,
   SheetSafeAreaMode,
   SheetTravelEvent,
-} from '../core/types';
+} from '../core/types.js';
 
 /** Configure a `<cap-sheet>` element from Vue `onMounted`. */
 export function setupSheet(

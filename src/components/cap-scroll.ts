@@ -1,6 +1,6 @@
-import { injectCapSheetStyles } from '../core/styles';
-import type { ScrollByTravelOptions, ScrollToTravelOptions } from '../core/types';
-import { clamp, dispatch } from '../core/utils';
+import { injectCapSheetStyles } from '../core/styles.js';
+import type { ScrollByTravelOptions, ScrollToTravelOptions } from '../core/types.js';
+import { clamp, dispatch } from '../core/utils.js';
 
 /** Framework-agnostic scroll primitive with progress helpers. */
 export class CapScroll extends HTMLElement {

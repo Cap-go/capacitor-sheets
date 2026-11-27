@@ -1,4 +1,4 @@
-import type { SheetPlacement, SheetTrack } from './types';
+import type { SheetPlacement, SheetTrack } from './types.js';
 
 const focusableSelector = [
   'a[href]',

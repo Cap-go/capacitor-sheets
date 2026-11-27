@@ -1,4 +1,4 @@
-import { releaseThemeColorDimmer, retainThemeColorDimmer, setThemeColorDimming } from './theme-color';
+import { releaseThemeColorDimmer, retainThemeColorDimmer, setThemeColorDimming } from './theme-color.js';
 import type {
   SheetActiveDetentChangeEvent,
   SheetAnimationSettings,
@@ -12,7 +12,7 @@ import type {
   SheetTrack,
   SheetTravelEvent,
   SheetTravelStatus,
-} from './types';
+} from './types.js';
 import {
   clamp,
   createId,
@@ -29,7 +29,7 @@ import {
   toEm,
   trackForPlacement,
   trackSign,
-} from './utils';
+} from './utils.js';
 
 type Source = SheetPresentedChangeEvent['source'];
 

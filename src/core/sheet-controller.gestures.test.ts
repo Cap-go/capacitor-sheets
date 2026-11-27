@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import '../components';
-import type { CapSheet } from '../components/cap-sheet';
+import '../components/index.js';
+import type { CapSheet } from '../components/cap-sheet.js';
 
 type ControllerInternals = {
   nearestDetentForOffset(offsetPx: number, velocity: number): number;
